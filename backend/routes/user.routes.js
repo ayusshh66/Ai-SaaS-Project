@@ -6,6 +6,7 @@ import { eq, or } from 'drizzle-orm';
 import { createHmac, randomBytes } from 'crypto';
 import jwt from 'jsonwebtoken'
 import 'dotenv/config'
+import { authentication } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -95,5 +96,9 @@ router.post('/login', async(req,res) => {
     } catch (error) {
         return console.error(error.message)
     }
+})
+
+router.get("/me", authentication, async (req,res) => {
+    return res.status(201).json({data : req.user})
 })
 export default router;
