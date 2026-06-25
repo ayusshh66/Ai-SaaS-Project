@@ -11,4 +11,7 @@ export const signUpValidation =  z.object({
     
 })
 
-
+export const logInValidation =  z.object({
+    identifier : z.string().min(1,"email or username required"),
+    password : z.string(1, " password required"),
+})
