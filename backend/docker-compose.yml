@@ -1,0 +1,16 @@
+  services:
+    postgresAiSaas:
+      image: postgres
+      container_name: postgresAiSaas
+      restart: always
+      ports:
+        - "5432:5432"
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: ggwp
+        POSTGRES_DB: postgresAiSaas
+      volumes:
+        - postgresAiSaas_data:/var/lib/postgresql
+
+  volumes:
+    postgresAiSaas_data:

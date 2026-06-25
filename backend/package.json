@@ -1,12 +1,32 @@
 {
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "drizzle.config.js",
+  "scripts": {
+    "start": "node --watch index.js",
+    "dev": "nodemon index.js"
+  },
   "dependencies": {
+    "axios": "^1.18.1",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
-    "pg": "^8.22.0"
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "nanoid": "^5.1.16",
+    "pg": "^8.22.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.0.1",
     "@types/pg": "^8.20.0",
     "drizzle-kit": "^0.31.10",
+    "nodemon": "^3.1.14",
     "tsx": "^4.22.4"
   }
 }
