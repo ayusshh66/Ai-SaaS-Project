@@ -1,8 +1,8 @@
 import express from 'express';
-import { logInValidation, signUpValidation } from '../validators/signupValidation.js';
+import { logInValidation, signUpValidation, idValidation } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { usersTable } from '../models/user.model.js';
-import { eq, or } from 'drizzle-orm';
+import { eq, or, and } from 'drizzle-orm';
 import { createHmac, randomBytes } from 'crypto';
 import jwt from 'jsonwebtoken'
 import 'dotenv/config'
@@ -101,4 +101,49 @@ router.post('/login', async(req,res) => {
 router.get("/me", authentication, async (req,res) => {
     return res.status(201).json({data : req.user})
 })
+
+router.delete("/delete", authentication, async (req, res) => {
+  try {
+    const request = await idValidation.safeParseAsync(req.body);
+
+    if (request.error) {
+      return res.status(400).json({ error: request.error.format() });
+    }
+
+    const { id, password } = request.data;
+
+    const [notty] = await db
+      .select({
+        salt: usersTable.salt,
+        password: usersTable.password,
+        userid: usersTable.id,
+        userName: usersTable.userName, 
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, id));
+
+    if (!notty) {
+      return res.status(404).json({ error: "User profile not found." });
+    }
+
+    const salt = notty.salt;
+    const oldHashedPassword = notty.password;
+
+    const newHashedPassword = createHmac('sha256', salt).update(password).digest('hex');
+
+    if (oldHashedPassword !== newHashedPassword || id !== notty.userid) {
+      return res.status(400).json({ error: "you have entered incorrect id or password" });
+    }
+
+    await db.delete(usersTable).where(eq(usersTable.id, id))
+
+    return res.status(200).json({
+      message: `the account with username ${notty.userName} has been deleted at `,
+      time: new Date(),
+    });
+
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
 export default router;
