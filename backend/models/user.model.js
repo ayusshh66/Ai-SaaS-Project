@@ -1,5 +1,6 @@
 import { pgTable, varchar, text, timestamp, uuid, many, integer, numeric, boolean, jsonb, one } from "drizzle-orm/pg-core";
 import { relations } from 'drizzle-orm';
+import { userPreferencesRelations, userPreferencesTable } from "./user.preferences.model.js";
 
 // users table
 export const usersTable = pgTable("users", {
@@ -49,6 +50,7 @@ export const recipesTable = pgTable('recipes', {
 export const usersRelations = relations(usersTable, ({ many }) => ({
   pantryItems: many(pantryItemsTable),
   recipes: many(recipesTable),
+  preference : one(userPreferencesTable)
 }));
 
 export const pantryItemsRelations = relations(pantryItemsTable, ({ one }) => ({

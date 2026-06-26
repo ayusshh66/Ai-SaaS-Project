@@ -1,4 +1,4 @@
-import { pgTable,  } from "drizzle-orm/pg-core";
+import { pgTable,uuid, text, jsonb, timestamp, integer,boolean,  } from "drizzle-orm/pg-core";
 import { usersTable } from "./user.model.js"; 
 
 export const userPreferencesTable = pgTable("user_preferences", {
@@ -17,7 +17,7 @@ export const userPreferencesTable = pgTable("user_preferences", {
 
   spiceLevel: text("spice_level"),
 
-  allergies: jsonb("allergies").$type<string[]>(),
+  allergies: jsonb("allergies"),
 
   dailyCalories: integer("daily_calories"),
 
@@ -25,3 +25,14 @@ export const userPreferencesTable = pgTable("user_preferences", {
 
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+// making relation so that drizzle will know, and avoiding leftjoints
+export const userPreferencesRelations = relations(
+  userPreferencesTable,
+  ({ one }) => ({
+    user: one(usersTable, {
+      fields: [userPreferencesTable.userId],
+      references: [usersTable.id],
+    }),
+  })
+);
