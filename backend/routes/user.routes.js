@@ -146,4 +146,42 @@ router.delete("/delete", authentication, async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 });
+
+router.patch("/update", authentication, async (req,res) => {
+
+    const request = await idValidation.safeParseAsync(req.body);
+
+    if(request.error){
+        return res.status(400).json({error : (await request).error.format()});
+    }
+
+    const {id, password} = request.data;
+
+    const [exisitingUser] = await db.select({
+        id : usersTable.id,
+        userName : usersTable.userName,
+        password : usersTable.password,
+        salt : usersTable.salt,
+    }).from(usersTable).where(eq(usersTable.id,id));
+
+    const salt = exisitingUser.salt;
+    const oldHashedPassword = exisitingUser.password;
+
+    const newHashedPassword = createHmac("sha256", salt).update(password).digest("hex")
+
+    if(oldHashedPassword !== newHashedPassword || id !== exisitingUser.id){
+        return res.status(400).json({error : `the id or username is wrong try again`})
+    }
+
+    const {newUserName} = req.body;
+
+    const [update] = await db.update(usersTable).set({newUserName}).where(eq(usersTable.id,id)).returning({ updated : newUserName})
+
+    if(!update){
+        return res.status(400).json({error : `profile not found`})
+    }
+
+    return res.status(200).json({ status : `success`, message : ` the userName ${newUserName} has been updated`})
+
+})
 export default router;
