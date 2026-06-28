@@ -1,6 +1,6 @@
 import express from 'express'
 import { usersTable, pantryItemsTable } from '../models/user.model.js'
-import { deletePantryItem, pantryItemValidation } from '../validators/signupValidation.js';
+import { idPantryValidation, pantryItemValidation } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { authentication } from '../middleware/auth.js';
 import { eq } from 'drizzle-orm';
@@ -44,7 +44,7 @@ pantryRouter.delete("/delete/:id", authentication, async(req,res) => {
 
         const relatedId = req.user.id;
         const userName = req.user.name;
-        const request = await deleteItems.safeParseAsync(req.params.id);
+        const request = await idPantryValidation.safeParseAsync(req.params.id);
 
         // const itemId = request.data;
 
@@ -72,9 +72,9 @@ pantryRouter.delete("/delete/:id", authentication, async(req,res) => {
 pantryRouter.patch("/update/:id", authentication, async(req,res) => {
     try {
         
-         const userName = req.user.name;
+    const userName = req.user.name;
     const relatedId = req.user.id
-    const request = await deletePantryItem.safeParseAsync(req.params.id);
+    const request = await idPantryValidation.safeParseAsync(req.params.id);
 
     if(request.error){
         return res.status(400).json({error : request.error.format()})
@@ -113,6 +113,34 @@ pantryRouter.patch("/update/:id", authentication, async(req,res) => {
         console.error(error);
         return res.status(500).json({error : "internal server error"})
     }
+})
+
+pantryRouter.get("info/:id", authentication, async(req,res) => {
+
+    try {
+        
+        const userName = req.user.name;
+    const request = await idPantryValidation.safeParseAsync(req.params.id);
+
+    if(request.error){
+        return res.status(400).json({error : request.error.format()})
+    }
+
+    const pantryId = request.data;
+
+    const [items] = await db.select().from(pantryItemsTable).where(eq(pantryItemsTable.id, pantryId));
+
+    if(!items){
+        return res.status(400).json({error : `there is pantry items`})
+    }
+
+    return res.status(200).json({ data : items})
+
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({error : 'internal server error'})
+    }
+
 })
 
 export default pantryRouter;

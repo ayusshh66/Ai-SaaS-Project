@@ -30,6 +30,6 @@ export const pantryItemValidation = z.object({
     is_running_low : boolean(),
 })
 
-export const deletePantryItem = z.object({
+export const idPantryValidation = z.object({
     id : z.string(),
 })
