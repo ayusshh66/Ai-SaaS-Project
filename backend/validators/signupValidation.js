@@ -1,4 +1,4 @@
-import { email, z } from "zod";
+import { boolean, email, z } from "zod";
 
 export const signUpValidation =  z.object({
     firstName : z.string(),
@@ -19,4 +19,13 @@ export const logInValidation =  z.object({
 export const idValidation =  z.object({
     id : z.string(),
     password : z.string()
+})
+
+export const pantryItemValidation = z.object({
+    name : z.string(),
+    quantity : z.number(),
+    unit : z.string(),
+    category : z.string(),
+    expiry_date : z.string(),
+    is_running_low : boolean(),
 })
