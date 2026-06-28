@@ -29,3 +29,7 @@ export const pantryItemValidation = z.object({
     expiry_date : z.string(),
     is_running_low : boolean(),
 })
+
+export const deletePantryItem = z.object({
+    id : z.string(),
+})
