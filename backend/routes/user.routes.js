@@ -152,7 +152,7 @@ router.patch("/update", authentication, async (req,res) => {
     const request = await idValidation.safeParseAsync(req.body);
 
     if(request.error){
-        return res.status(400).json({error : (await request).error.format()});
+        return res.status(400).json({error : request.error.format()});
     }
 
     const {id, password} = request.data;
@@ -175,7 +175,7 @@ router.patch("/update", authentication, async (req,res) => {
 
     const {newUserName} = req.body;
 
-    const [update] = await db.update(usersTable).set({newUserName}).where(eq(usersTable.id,id)).returning({ updated : newUserName})
+    const [update] = await db.update(usersTable).set({userName:newUserName}).where(eq(usersTable.id,id)).returning({ updatedName: usersTable.userName})
 
     if(!update){
         return res.status(400).json({error : `profile not found`})
@@ -184,4 +184,5 @@ router.patch("/update", authentication, async (req,res) => {
     return res.status(200).json({ status : `success`, message : ` the userName ${newUserName} has been updated`})
 
 })
+
 export default router;
