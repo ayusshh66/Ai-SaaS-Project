@@ -3,7 +3,7 @@ import { usersTable, pantryItemsTable } from '../models/user.model.js'
 import { idPantryValidation, pantryItemValidation, pantryQuerySchema } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { authentication } from '../middleware/auth.js';
-import { eq, ilike } from 'drizzle-orm';
+import { desc, eq, ilike } from 'drizzle-orm';
 
 
 const pantryRouter = express.Router();
@@ -148,7 +148,15 @@ pantryRouter.get("/info", authentication, async(req,res) => {
             return;
         }
 
-        const pantry_items = await db.
+        const pantry_items = await db.select().from(pantryItemsTable).orderBy(desc(pantryItemsTable.createdAt)).limit(limit).offset((page-1)*limit)
+
+        return res.status(200).json({
+        success: true,
+        results: pantryItems.length,
+         page,
+        limit,
+        data: pantryItems,
+        });
 
     } catch (error) {
         console.error(error)
