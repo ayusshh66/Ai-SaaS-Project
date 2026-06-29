@@ -1,9 +1,9 @@
 import express from 'express'
 import { usersTable, pantryItemsTable } from '../models/user.model.js'
-import { idPantryValidation, pantryItemValidation } from '../validators/signupValidation.js';
+import { idPantryValidation, pantryItemValidation, pantryQuerySchema } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { authentication } from '../middleware/auth.js';
-import { eq } from 'drizzle-orm';
+import { eq, ilike } from 'drizzle-orm';
 
 
 const pantryRouter = express.Router();
@@ -115,26 +115,40 @@ pantryRouter.patch("/update/:id", authentication, async(req,res) => {
     }
 })
 
-pantryRouter.get("info/:id", authentication, async(req,res) => {
+pantryRouter.get("/info", authentication, async(req,res) => {
 
     try {
-        
-        const userName = req.user.name;
-    const request = await idPantryValidation.safeParseAsync(req.params.id);
 
-    if(request.error){
-        return res.status(400).json({error : request.error.format()})
-    }
+        const query = await pantryQuerySchema.safeParseAsync(req.query);
 
-    const pantryId = request.data;
+        if(query.error){
+            return res.status(400).json({error : query.error.format()})
+        }
 
-    const [items] = await db.select().from(pantryItemsTable).where(eq(pantryItemsTable.id, pantryId));
+        const {category, search, isRunningLow, page, limit} = query.data;
 
-    if(!items){
-        return res.status(400).json({error : `there is pantry items`})
-    }
+        const filter = [
+            eq(pantryItemsTable.userId, req.user.id)
+        ]
 
-    return res.status(200).json({ data : items})
+        if(category){
+            filter.push(eq(pantryItemsTable.category,category))
+            return;
+        }
+
+        if(search){
+            filter.push(ilike(pantryItemsTable.name,`${search}`))
+            return;
+        }
+
+        if( typeof isRunningLow === "boolean"){
+            filter.push(
+                eq(pantryItemsTable.isRunningLow, isRunningLow)
+            )
+            return;
+        }
+
+        const pantry_items = await db.
 
     } catch (error) {
         console.error(error)
