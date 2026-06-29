@@ -33,3 +33,18 @@ export const pantryItemValidation = z.object({
 export const idPantryValidation = z.object({
     id : z.string(),
 })
+
+export const pantryQuerySchema = z.object({
+  category: z.string().trim().optional(),
+
+  search: z.string().trim().min(1).optional(),
+
+  isRunningLow: z
+    .enum(["true", "false"])
+    .transform((val) => val === "true")
+    .optional(),
+
+  page: z.coerce.number().min(1).default(1),
+
+  limit: z.coerce.number().min(1).max(50).default(10),
+});
