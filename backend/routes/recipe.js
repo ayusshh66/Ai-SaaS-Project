@@ -65,9 +65,60 @@ recipeRouter.post('/create', authentication, async(req,res) => {
         });
 
     } catch (error) {
-        return res.status(500).json({error : "internal server error"})
+        return res.status(500).json({error : "internal server"})
     }
     
+})
+
+recipeRouter.get("/", authentication, async(req,res) => {
+
+    try {
+        
+        const userId = req.user.id;
+
+        const {search, cuisine, difficulty, max_prep_time, 
+            max_calories, min_protein, max_fats, // NEW NUTRITION FILTER ARGUMENTS
+            sort_by, sort_order, limit, offset } = req.body;
+
+        const [condition] = [eq(recipesTable.userId, userId)];
+
+        if (search) {
+            conditions.push(ilike(pantryItemsTable.name, `%${search}%`));
+        }
+
+        if(cuisine){
+            condition.push(eq(recipesTable.cuisine,cuisine))
+        }
+        
+        if (difficulty) {
+            conditions.push(eq(recipesTable.difficulty, difficulty));
+        }
+
+        if (max_prep_time) {
+            conditions.push(lte(recipesTable.prepTime, Number(max_prep_time)));
+        }
+
+        if (max_calories) {
+            conditions.push(lte(recipeNutritionTable.calories, Number(max_calories)));
+        }
+
+        if (min_protein) {
+            conditions.push(gte(recipeNutritionTable.protein, Number(min_protein)));
+        }
+
+        if (max_fats) {
+            conditions.push(lte(recipeNutritionTable.fats, Number(max_fats)));
+        }
+
+        const queryLimit = limit ? Number(limit) : 20;
+        const queryOffset = offset ? Number(offset) : 0;
+
+        
+
+    } catch (error) {
+        return res.status(500).json({error : "internal server error"})
+    }
+
 })
 
 export default recipeRouter;
