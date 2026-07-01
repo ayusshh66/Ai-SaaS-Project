@@ -46,6 +46,16 @@ export const recipesTable = pgTable('recipes', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+export const recipeNutritionTable = pgTable('recipe_nutrition', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  recipeId: uuid('recipe_id').references(() => recipesTable.id, { onDelete: 'cascade' }).notNull().unique(), // Unique constraint guarantees 1-to-1
+  calories: integer('calories'),
+  protein: integer('protein'), // in grams
+  carbs: integer('carbs'),     // in grams
+  fats: integer('fats'),       // in grams
+  fiber: integer('fiber'),     // in grams
+});
+
 // Define Relationships for easy joining
 export const usersRelations = relations(usersTable, ({ many, one }) => ({
   pantryItems: many(pantryItemsTable),
@@ -59,4 +69,9 @@ export const pantryItemsRelations = relations(pantryItemsTable, ({ one }) => ({
 
 export const recipesRelations = relations(recipesTable, ({ one }) => ({
   user: one(usersTable, { fields: [recipesTable.userId], references: [usersTable.id] }),
+}));
+
+// relationships for the new nutrition table
+export const recipeNutritionRelations = relations(recipeNutritionTable, ({ one }) => ({
+  recipe: one(recipesTable, { fields: [recipeNutritionTable.recipeId], references: [recipesTable.id] })
 }));
