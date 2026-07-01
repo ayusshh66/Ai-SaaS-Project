@@ -83,15 +83,13 @@ router.post('/login', async(req,res) => {
             return res.status(400).json({error : `the password is not correct, try again`})
         }
 
-        const token = jwt.sign({id : exisitingUser.id , email : exisitingUser.email, name : exisitingUser.name}, process.env.JWT_SECRET);
+        const token = jwt.sign({id : exisitingUser.id , email : exisitingUser.email, name : exisitingUser.name, }, process.env.JWT_SECRET);
 
         return res.status(200).json({status : `success`, data : {
             token : token,
             name : exisitingUser.name,
             email : exisitingUser.email
         }})
-
-
 
     } catch (error) {
         return console.error(error.message)
