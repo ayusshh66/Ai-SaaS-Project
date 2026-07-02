@@ -2,6 +2,7 @@ import express from 'express';
 import { authentication } from '../middleware/auth.js';
 import db from '../src/index.js';
 import { recipeNutritionTable, recipesTable } from '../models/user.model.js';
+import { and, eq } from 'drizzle-orm';
 
 const recipeRouter = express.Router();
 
@@ -9,10 +10,10 @@ recipeRouter.post('/create', authentication, async(req,res) => {
 
     try {
         
-        const userId = req.user.id;
+    const userId = req.user.id;
 
     const {name, description, cuisine, difficulty, prepTime, servings, instructions, 
-            nutrition }// expecting : {calories, protein, carbs, fats, fibers}}
+            nutrition }// expecting : {calories, protein, carbs, fats, fibers}
              = req.body;
     
     if(!name || !instructions ){
@@ -21,6 +22,13 @@ recipeRouter.post('/create', authentication, async(req,res) => {
 
     // Transaction guarantees that both the recipe and its nutrition row 
     // are saved securely. If one step fails, everything rolls back automatically
+
+    // We use transactions here because the API route is explicitly designed to
+    //  handle a two-table relational chain (Recipe + Nutrition Card) in a single request.
+
+    //the major difference ..... below
+    //When you create a pantry item, it is a standalone endpoint.
+    //When you create a recipe, you have the option to also create a record in a completely different table: the recipe_nutrition table.
 
     const recipeResult = await db.transaction(async(tx) => {
 
@@ -39,6 +47,7 @@ recipeRouter.post('/create', authentication, async(req,res) => {
 
         let insertedNutrition = null
 
+        // Object.keys() turns the object properties (like calories or protein) into a flat array (e.g., ['calories', 'protein'])
         if(nutrition && Object.keys(nutrition).length>0){
             [insertedNutrition] = await tx.insert(recipeNutritionTable).values({
                 recipeId : newRecipe.id,
@@ -110,10 +119,35 @@ recipeRouter.get("/", authentication, async(req,res) => {
             conditions.push(lte(recipeNutritionTable.fats, Number(max_fats)));
         }
 
+
+        //pagination
         const queryLimit = limit ? Number(limit) : 20;
         const queryOffset = offset ? Number(offset) : 0;
 
+        // Custom sorting
+        const validSortColumns = { prep_time: recipesTable.prepTime, name: recipesTable.name };
+        const sortColumn = validSortColumns[sort_by] || recipesTable.createdAt;
+        const finalOrder = sort_order === 'asc' ? sortColumn : desc(sortColumn);
+
+        //we dont put result as an array cuz we dont want 1 result we want all the search items 
+        const result = await db.select({
+            recipe : recipesTable,
+            nutrition : recipeNutritionTable,
+        }).where(and(...condition)).orderBy(finalOrder)
+            .limit(queryLimit)
+            .offset(queryOffset);
         
+         // Map results back into a clean nested object structure for the frontend
+        const formattedResults = results.map(row => ({
+            ...row.recipe,
+            nutrition: row.nutrition // Nested directly inside each recipe object!
+        }));
+
+        return res.status(200).json({
+            status: "success",
+            count: formattedResults.length,
+            data: formattedResults
+        });
 
     } catch (error) {
         return res.status(500).json({error : "internal server error"})
