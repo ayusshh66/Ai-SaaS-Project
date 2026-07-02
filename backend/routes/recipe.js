@@ -254,5 +254,28 @@ recipeRouter.delete('/delete/:id', authentication, async(req,res) => {
 
 })
 
+recipeRouter.get("/stats", authentication, async(req,res) => {
+
+    const userId = req.user.id;
+
+    const [ stats] = await db.select({
+        totalRecipes: count(recipesTable.id),
+        cuisineCount: countDistinct(recipesTable.cuisine),
+        avgPrepTime: avg(recipesTable.prepTime),
+        avgCalories: avg(recipeNutritionTable.calories)
+    }).from(recipesTable).leftJoin(recipeNutritionTable, eq(recipeNutritionTable.id, recipeNutritionTable.userId))
+    .where(eq(recipesTable.id, userId))
+
+    return res.status(200).json({
+        status: "success",
+        data: {
+            total_recipes: Number(stats.totalRecipes || 0),
+            unique_cuisines: Number(stats.cuisineCount || 0),
+            avg_prep_time: Math.round(Number(stats.avgPrepTime || 0)),
+            avg_calories: Math.round(Number(stats.avgCalories || 0))
+            }
+        });
+})
+
 
 export default recipeRouter;
