@@ -3,6 +3,7 @@ import { authentication } from '../middleware/auth.js';
 import db from '../src/index.js';
 import { recipeNutritionTable, recipesTable } from '../models/user.model.js';
 import { and, eq } from 'drizzle-orm';
+import { idPantryValidation } from '../validators/signupValidation.js';
 
 const recipeRouter = express.Router();
 
@@ -154,5 +155,75 @@ recipeRouter.get("/", authentication, async(req,res) => {
     }
 
 })
+
+recipeRouter.patch('/update/:id', authentication, async(req,res) =>{
+
+    try {
+        
+        const userId = req.user.id
+
+        const request = await idPantryValidation.safeParseAsync(req.params.id);
+
+        if(request.error){
+            res.status(500).json({error : request.error.format})
+        }
+
+        const {id} = request.data;
+
+        // name cuisin etc will be stored inside recipeUpdate and nutrition such as calories etc will be there in nutrition
+        const {nutrition, ...recipeUpdates} = req.body;
+
+        const updateResult = await db.transaction(async(tx) => {
+
+            //updating parent recipe
+
+            const [updateRecipe] = await tx.update(recipesTable).set({
+                recipeUpdates,
+            }).where(and(eq(recipesTable.id, id , eq(recipesTable.userId, userId)))).returning();
+
+            if (!updatedRecipe) return null;
+
+            let updateNutrition = null;
+
+            if(nutrition){
+                const [updateNutrition] = await tx.update(recipeNutritionTable).insert({
+                        recipeId: recipeId,
+                        calories: nutrition.calories,
+                        protein: nutrition.protein,
+                        carbs: nutrition.carbs,
+                        fats: nutrition.fats,
+                        fiber: nutrition.fiber,
+                }).onConflictDoUpdate({
+                    calories: nutrition.calories,
+                    protein: nutrition.protein,
+                    carbs: nutrition.carbs,
+                    fats: nutrition.fats,
+                    fiber: nutrition.fiber,
+                }).returning();
+            }
+
+            return { ...updatedRecipe, nutrition: updatedNutrition };
+
+        }  )
+
+        if (!updatedResult) {
+            return res.status(404).json({ error: "Recipe not found or unauthorized" });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Recipe and nutrition card updated successfully",
+            data: updatedResult
+        });
+
+
+    } catch (error) {
+        res.status(400).json({error : `Internal Server Error ${error}`})
+    }
+
+})
+
+
+
 
 export default recipeRouter;
