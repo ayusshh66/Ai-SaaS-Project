@@ -223,7 +223,36 @@ recipeRouter.patch('/update/:id', authentication, async(req,res) =>{
 
 })
 
+recipeRouter.delete('/delete/:id', authentication, async(req,res) => {
 
+    try {
+        
+        const userId = req.user.id;
+
+        const request = await idPantryValidation.safeParseAsync(req.params.id);
+
+        if(request.error){
+            res.status(500).json({error : request.error.format()})
+        }
+
+        const {id} = request.data;
+
+        const [deleteRecipe] = await db.delete(recipesTable).where(and(eq(recipesTable.id, id , eq(recipesTable.userId, userId)))).returning();
+        
+        if(!deleteRecipe){
+            return res.status(400).json({error : `there is no recipe`})
+        }
+
+        return res.status(200).json({status : "successful!", data : {deleteRecipe}})
+
+
+
+
+    } catch (error) {
+        res.status(400).json({error : `internal server error ${error}`})
+    }
+
+})
 
 
 export default recipeRouter;
