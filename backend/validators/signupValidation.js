@@ -1,4 +1,4 @@
-import { boolean, email, z } from "zod";
+import { boolean, email, z, uuid } from "zod";
 
 export const signUpValidation =  z.object({
     firstName : z.string(),
@@ -31,7 +31,7 @@ export const pantryItemValidation = z.object({
 })
 
 export const idPantryValidation = z.object({
-    id : z.string(),
+    id : z.string().uuid(),
 })
 
 export const pantryQuerySchema = z.object({

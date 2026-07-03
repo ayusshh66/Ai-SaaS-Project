@@ -27,7 +27,7 @@ export const pantryItemsTable = pgTable('pantry_items', {
   quantity: numeric('quantity').notNull(),
   unit: text('unit').notNull(),
   category: text('category'),
-  expiryDate: timestamp('expiry_date'),
+  expiryDate: text('expiry_date'),
   isRunningLow: boolean('is_running_low').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });

@@ -88,7 +88,7 @@ recipeRouter.get("/", authentication, async(req,res) => {
 
         const {search, cuisine, difficulty, max_prep_time, 
             max_calories, min_protein, max_fats, // NEW NUTRITION FILTER ARGUMENTS
-            sort_by, sort_order, limit, offset } = req.body;
+            sort_by, sort_order, limit, offset } = req.query;
 
         const [condition] = [eq(recipesTable.userId, userId)];
 
@@ -101,25 +101,24 @@ recipeRouter.get("/", authentication, async(req,res) => {
         }
         
         if (difficulty) {
-            conditions.push(eq(recipesTable.difficulty, difficulty));
+            condition.push(eq(recipesTable.difficulty, difficulty));
         }
 
         if (max_prep_time) {
-            conditions.push(lte(recipesTable.prepTime, Number(max_prep_time)));
+            condition.push(lte(recipesTable.prepTime, Number(max_prep_time)));
         }
 
         if (max_calories) {
-            conditions.push(lte(recipeNutritionTable.calories, Number(max_calories)));
+            condition.push(lte(recipeNutritionTable.calories, Number(max_calories)));
         }
 
         if (min_protein) {
-            conditions.push(gte(recipeNutritionTable.protein, Number(min_protein)));
+            condition.push(gte(recipeNutritionTable.protein, Number(min_protein)));
         }
 
         if (max_fats) {
-            conditions.push(lte(recipeNutritionTable.fats, Number(max_fats)));
+            condition.push(lte(recipeNutritionTable.fats, Number(max_fats)));
         }
-
 
         //pagination
         const queryLimit = limit ? Number(limit) : 20;
@@ -134,7 +133,7 @@ recipeRouter.get("/", authentication, async(req,res) => {
         const result = await db.select({
             recipe : recipesTable,
             nutrition : recipeNutritionTable,
-        }).where(and(...condition)).orderBy(finalOrder)
+        }).from(recipesTable).where(and(...condition)).orderBy(finalOrder)
             .limit(queryLimit)
             .offset(queryOffset);
         
@@ -225,7 +224,7 @@ recipeRouter.patch('/update/:id', authentication, async(req,res) =>{
 
 recipeRouter.delete('/delete/:id', authentication, async(req,res) => {
 
-    try {
+    try { 
         
         const userId = req.user.id;
 
@@ -276,6 +275,5 @@ recipeRouter.get("/stats", authentication, async(req,res) => {
             }
         });
 })
-
 
 export default recipeRouter;

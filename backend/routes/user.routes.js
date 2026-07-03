@@ -136,8 +136,7 @@ router.delete("/delete", authentication, async (req, res) => {
     await db.delete(usersTable).where(eq(usersTable.id, id))
 
     return res.status(200).json({
-      message: `the account with username ${notty.userName} has been deleted at `,
-      time: new Date(),
+      message: `the account with username ${notty.userName} has been deleted at `,time: new Date(),
     });
 
   } catch (error) {
@@ -147,13 +146,7 @@ router.delete("/delete", authentication, async (req, res) => {
 
 router.patch("/update", authentication, async (req,res) => {
 
-    const request = await idValidation.safeParseAsync(req.body);
-
-    if(request.error){
-        return res.status(400).json({error : request.error.format()});
-    }
-
-    const {id, password} = request.data;
+    const {id, password, newUserName} = req.body
 
     const [exisitingUser] = await db.select({
         id : usersTable.id,
@@ -171,9 +164,7 @@ router.patch("/update", authentication, async (req,res) => {
         return res.status(400).json({error : `the id or username is wrong try again`})
     }
 
-    const {newUserName} = req.body;
-
-    const [update] = await db.update(usersTable).set({userName:newUserName}).where(eq(usersTable.id,id)).returning({ updatedName: usersTable.userName})
+    const [update] = await db.update(usersTable).set({userName:newUserName}).where(and(eq(usersTable.password, password),eq(usersTable.id,id))).returning({ updatedName: usersTable.userName})
 
     if(!update){
         return res.status(400).json({error : `profile not found`})

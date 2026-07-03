@@ -3,7 +3,7 @@ import { usersTable, pantryItemsTable } from '../models/user.model.js'
 import { idPantryValidation, pantryItemValidation, pantryQuerySchema } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { authentication } from '../middleware/auth.js';
-import { desc, eq, ilike } from 'drizzle-orm';
+import { desc, eq, ilike, and, or } from 'drizzle-orm';
 
 
 const pantryRouter = express.Router();
@@ -44,7 +44,7 @@ pantryRouter.delete("/delete/:id", authentication, async(req,res) => {
 
         const relatedId = req.user.id;
         const userName = req.user.name;
-        const request = await idPantryValidation.safeParseAsync(req.params.id);
+        const request = await idPantryValidation.safeParseAsync({id : req.params.id});
 
         // const itemId = request.data;
 
@@ -52,7 +52,7 @@ pantryRouter.delete("/delete/:id", authentication, async(req,res) => {
             return res.status(400).json({error : request.error.format()})
         }
 
-        const itemId = request.data;
+        const itemId = request.data.id;
 
         const [deleteItems] = await db.delete(pantryItemsTable).where(and(eq(pantryItemsTable.id, itemId), eq(pantryItemsTable.userId, relatedId))).returning()
 
@@ -74,13 +74,13 @@ pantryRouter.patch("/update/:id", authentication, async(req,res) => {
         
     const userName = req.user.name;
     const relatedId = req.user.id
-    const request = await idPantryValidation.safeParseAsync(req.params.id);
+    const request = await idPantryValidation.safeParseAsync({id : req.params.id});
 
     if(request.error){
         return res.status(400).json({error : request.error.format()})
     }
 
-    const itemId = request.data;
+    const itemId = request.data.id;
 
     const update = await pantryItemValidation.safeParseAsync(req.body);
 
@@ -115,54 +115,52 @@ pantryRouter.patch("/update/:id", authentication, async(req,res) => {
     }
 })
 
-pantryRouter.get("/info", authentication, async(req,res) => {
-
+pantryRouter.get("/info", authentication, async (req, res) => {
     try {
-
         const query = await pantryQuerySchema.safeParseAsync(req.query);
 
-        if(query.error){
-            return res.status(400).json({error : query.error.format()})
+        if (query.error) {
+            return res.status(400).json({ error: query.error.format() });
         }
 
-        const {category, search, isRunningLow, page, limit} = query.data;
+        const { category, search, isRunningLow, page, limit } = query.data;
 
         const filter = [
             eq(pantryItemsTable.userId, req.user.id)
-        ]
+        ];
 
-        if(category){
-            filter.push(eq(pantryItemsTable.category,category))
-            return;
+        if (category) {
+            filter.push(eq(pantryItemsTable.category, category));
         }
 
-        if(search){
-            filter.push(ilike(pantryItemsTable.name,`${search}`))
-            return;
+        if (search) {
+            filter.push(ilike(pantryItemsTable.name, `%${search}%`));
         }
 
-        if( typeof isRunningLow === "boolean"){
-            filter.push(
-                eq(pantryItemsTable.isRunningLow, isRunningLow)
-            )
-            return;
+        if (typeof isRunningLow === "boolean") {
+            filter.push(eq(pantryItemsTable.isRunningLow, isRunningLow));
         }
 
-        const pantry_items = await db.select().from(pantryItemsTable).orderBy(desc(pantryItemsTable.createdAt)).limit(limit).offset((page-1)*limit)
+        const pantryItems = await db
+            .select()
+            .from(pantryItemsTable)
+            .where(and(...filter)) 
+            .orderBy(desc(pantryItemsTable.createdAt))
+            .limit(limit)
+            .offset((page - 1) * limit);
 
         return res.status(200).json({
-        success: true,
-        results: pantryItems.length,
-         page,
-        limit,
-        data: pantryItems,
+            success: true,
+            results: pantryItems.length,
+            page,
+            limit,
+            data: pantryItems,
         });
 
     } catch (error) {
-        console.error(error)
-        return res.status(500).json({error : 'internal server error'})
+        console.error(error);
+        return res.status(500).json({ error: 'internal server error' });
     }
-
-})
+});
 
 export default pantryRouter;
