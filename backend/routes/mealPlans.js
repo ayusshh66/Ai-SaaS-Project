@@ -203,4 +203,33 @@ mealPlanRouter.delete('/delete:id', authentication, async(req,res) =>{
 
 })
 
+mealPlanRouter.get("/stats", authentication, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const [statsResult] = await db
+            .select({
+                totalPlannedMeals: sql`count(*)`,
+                thisWeekCount: sql`count(*) filter (
+                    where ${mealPlansTable.mealDate} >= CURRENT_DATE 
+                    and ${mealPlansTable.mealDate} < CURRENT_DATE + interval '7 days'
+                )`
+            })
+            .from(mealPlansTable)
+            .where(eq(mealPlansTable.userId, userId));
+
+        return res.status(200).json({
+            status: "success",
+            data: {
+                total_planned_meals: Number(statsResult?.totalPlannedMeals || 0),
+                this_week_count: Number(statsResult?.thisWeekCount || 0)
+            }
+        });
+
+    } catch (error) {
+        console.error("Error compiling stats:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 export default mealPlanRouter;
