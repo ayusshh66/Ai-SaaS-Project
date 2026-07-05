@@ -49,4 +49,13 @@ export const pantryQuerySchema = z.object({
   limit: z.coerce.number().min(1).max(50).default(10),
 });
 
+const createMealPlanSchema = z.object({
+    recipeId: z.string().uuid("Invalid recipe ID format"),
+    mealDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+    mealType: z.enum(["breakfast", "lunch", "dinner"], {
+        errorMap: () => ({ message: "mealType must be 'breakfast', 'lunch', or 'dinner'" })
+    })                  
+});
+
+
 
