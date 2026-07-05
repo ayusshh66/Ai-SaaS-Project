@@ -56,6 +56,20 @@ export const recipeNutritionTable = pgTable('recipe_nutrition', {
   fiber: integer('fiber'),     // in grams
 });
 
+//MEAL PLANS eg. breakfast, lunch, dinner
+export const mealPlansTable = pgTable('meal_plans', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => usersTable.id, { onDelete: 'cascade' }).notNull(),
+  recipeId: uuid('recipe_id').references(() => recipesTable.id, { onDelete: 'cascade' }).notNull(),
+  mealDate: date('meal_date').notNull(), // Use simple date format
+  mealType: text('meal_type').notNull(), // 'breakfast' | 'lunch' | 'dinner'
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').$onUpdate(() => new Date())
+}, (table) => ({
+  //this is a constraint if we try to add more than 1 meal in mealplan at a given slot eg lunch, then it will restrict it and we can update it in further router
+  userMealDateTypeUnique: unique('user_meal_date_type_unique').on(table.userId, table.mealDate, table.mealType)
+}));
+
 // Define Relationships for easy joining
 export const usersRelations = relations(usersTable, ({ many, one }) => ({
   pantryItems: many(pantryItemsTable),
