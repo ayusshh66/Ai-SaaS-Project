@@ -57,5 +57,8 @@ const createMealPlanSchema = z.object({
     })                  
 });
 
+const idParamSchema = z.object({
+    id: z.string().uuid("Invalid meal plan ID format")
+});
 
 
