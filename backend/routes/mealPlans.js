@@ -1,6 +1,6 @@
 import express from 'express';
 import { authentication } from '../middleware/auth.js';
-import { createMealPlanSchema } from '../validators/signupValidation.js';
+import { createMealPlanSchema, idParamSchema } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { mealPlansTable, recipesTable } from '../models/user.model.js';
 import {eq, lte,and, or, gte, asc, desc} from "drizzle-orm"
@@ -167,6 +167,38 @@ mealPlanRouter.get('/upcoming', authentication, async(req,res) => {
         
     } catch (error) {
         return res.status(500).json({error : "Internal server error", error})
+    }
+
+})
+
+mealPlanRouter.delete('/delete:id', authentication, async(req,res) =>{
+    
+    try {
+        
+        const userId = req.user.id;
+
+        const request = await idParamSchema.safeParseAsync(req.params);
+
+        if(request.error){
+            return res.status(400).json({error : request.error.format()})
+        }
+
+        const mealPlanId = request.data;
+
+        const [deletedMeal] = await db.delete(mealPlansTable).where(and(eq(mealPlansTable.userId, userId) , eq(mealPlansTable.id, mealPlanId))).returning()
+
+        if (!deletedMeal) {
+            return res.status(404).json({ error: "Meal plan entry not found or unauthorized" });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Meal plan entry was successfully removed",
+            deleted_entry: deletedMeal
+        });
+
+    } catch (error) {
+        return res.status(500).json({error : "Internal Server Error"})
     }
 
 })
