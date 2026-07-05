@@ -3,6 +3,7 @@ import { authentication } from '../middleware/auth.js';
 import { createMealPlanSchema } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { mealPlansTable, recipesTable } from '../models/user.model.js';
+import {eq, lte,and, or, gte, asc, desc} from "drizzle-orm"
 
 const mealPlanRouter = express.Router;
 
@@ -45,9 +46,11 @@ mealPlanRouter.post("/create", authentication, async(req,res) => {
 
 })
 
-mealPlanRouter.get('/weekly', async(req,res) => {
+mealPlanRouter.get('/weekly',authentication, async(req,res) => {
 
-    const userId = req.user.id;
+    try {
+        
+        const userId = req.user.id;
 
     const {weekStartDate} = req.query;
 
@@ -89,6 +92,8 @@ mealPlanRouter.get('/weekly', async(req,res) => {
             .innerJoin(recipesTable, eq(mealPlansTable.recipeId, recipesTable.id))
             .where(
                 and(
+                    //gte stands for Greater Than or Equal To ($\ge$).
+                    //lte stands for Less Than or Equal To ($\le$).
                     eq(mealPlansTable.userId, userId),
                     gte(mealPlansTable.mealDate, formattedStartDate),
                     lte(mealPlansTable.mealDate, formattedEndDate)
@@ -106,7 +111,63 @@ mealPlanRouter.get('/weekly', async(req,res) => {
         count: weeklyMeals.length,
         data: weeklyMeals
     });
-    
+
+    } catch (error) {
+        return res.status(500).json({error : "Intern server error", error})
+    }    
+
+})
+
+mealPlanRouter.get('/upcoming', authentication, async(req,res) => {
+
+    try {
+
+        const userId = req.user.id;
+
+        const limitParam = req.query.limit ? Number(req.query.limit) : 5;
+
+        const mealTypeOrder = sql`
+            CASE ${mealPlansTable.mealType}
+                WHEN 'breakfast' THEN 1
+                WHEN 'lunch' THEN 2
+                WHEN 'dinner' THEN 3
+                ELSE 4
+            END
+        `;
+
+        const upcomingMeals = await db
+            .select({
+                id: mealPlansTable.id,
+                userId: mealPlansTable.userId,
+                recipeId: mealPlansTable.recipeId,
+                mealDate: mealPlansTable.mealDate,
+                mealType: mealPlansTable.mealType,
+                recipeName: recipesTable.name,
+                prepTime: recipesTable.prepTime
+            })
+            .from(mealPlansTable)
+            .innerJoin(recipesTable, eq(mealPlansTable.recipeId, recipesTable.id))
+            .where(
+                and(
+                    eq(mealPlansTable.userId, userId),
+                    gte(mealPlansTable.mealDate, sql`CURRENT_DATE`) // Only pull meals starting today
+                )
+            )
+            .orderBy(
+                asc(mealPlansTable.mealDate),
+                asc(mealTypeOrder)
+            )
+            .limit(limitParam);
+
+            return res.status(200).json({
+            status: "success",
+            count: upcomingMeals.length,
+            data: upcomingMeals
+        });
+        
+    } catch (error) {
+        return res.status(500).json({error : "Internal server error", error})
+    }
 
 })
 
