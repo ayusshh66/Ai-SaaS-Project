@@ -1,5 +1,5 @@
 import express from 'express'
-import { usersTable, pantryItemsTable } from '../models/user.model.js'
+import { usersTable, pantryItemsTable, recipeIngredientsTable } from '../models/user.model.js'
 import { idPantryValidation, pantryItemValidation, pantryQuerySchema } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { authentication } from '../middleware/auth.js';
@@ -148,6 +148,16 @@ pantryRouter.get("/info", authentication, async (req, res) => {
             .orderBy(desc(pantryItemsTable.createdAt))
             .limit(limit)
             .offset((page - 1) * limit);
+        
+        // Fetch matching context from recipeIngredientsTable to help map tracking logs
+        const linkedIngredients = await db
+            .select({
+                name: recipeIngredientsTable.name,
+                unit: recipeIngredientsTable.unit,
+                useCount: sql`count(${recipeIngredientsTable.id})`.mapWith(Number)
+            })
+            .from(recipeIngredientsTable)
+            .groupBy(recipeIngredientsTable.name, recipeIngredientsTable.unit);
 
         return res.status(200).json({
             success: true,
@@ -155,6 +165,7 @@ pantryRouter.get("/info", authentication, async (req, res) => {
             page,
             limit,
             data: pantryItems,
+            recipe_ingredient_metrics: linkedIngredients
         });
 
     } catch (error) {
