@@ -70,6 +70,20 @@ export const mealPlansTable = pgTable('meal_plans', {
   userMealDateTypeUnique: unique('user_meal_date_type_unique').on(table.userId, table.mealDate, table.mealType)
 }));
 
+//shopping list itmes
+export const shoppingListItemsTable = pgTable('shopping_list_items', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => usersTable.id, { onDelete: 'cascade' }).notNull(),
+  ingredientName: text('ingredient_name').notNull(),
+  quantity: numeric('quantity').notNull(), // Supports decimal quantities (like 1.5 kg)
+  unit: text('unit').notNull(),
+  category: text('category').default('Uncategorized').notNull(),
+  fromMealPlan: boolean('from_meal_plan').default(false).notNull(),
+  isChecked: boolean('is_checked').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').$onUpdate(() => new Date())
+});
+
 // Define Relationships for easy joining
 export const usersRelations = relations(usersTable, ({ many, one }) => ({
   pantryItems: many(pantryItemsTable),
