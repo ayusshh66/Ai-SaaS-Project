@@ -1,4 +1,4 @@
-import { boolean, email, z, uuid } from "zod";
+import { boolean, email, z, uuid, int, nonnegative, optional, min, max, } from "zod";
 
 export const signUpValidation =  z.object({
     firstName : z.string(),
@@ -59,6 +59,30 @@ export const createMealPlanSchema = z.object({
 
 export const idParamSchema = z.object({
     id: z.string().uuid("Invalid meal plan ID format")
+});
+
+export const createRecipeSchema = z.object({
+    name: z.string().min(1, "Recipe name is required"),
+    description: z.string().optional(),
+    cuisine: z.string().optional(),
+    difficulty: z.string().optional(),
+    prepTime: z.number().int().positive().optional(),
+    servings: z.number().int().positive().optional(),
+    instructions: z.array(z.string()).min(1, "At least one instruction step is required"), // Stored as JSON array
+    nutrition: z.object({
+        calories: z.number().int().nonnegative().optional(),
+        protein: z.number().int().nonnegative().optional(),
+        carbs: z.number().int().nonnegative().optional(),
+        fats: z.number().int().nonnegative().optional(),
+        fiber: z.number().int().nonnegative().optional(),
+    }).optional(),
+    ingredients: z.array(
+        z.object({
+            name: z.string().min(1, "Ingredient name is required"),
+            quantity: z.number().positive("Quantity must be positive"),
+            unit: z.string().min(1, "Measurement unit is required")
+        })
+    ).min(1, "At least one ingredient is required")
 });
 
 
