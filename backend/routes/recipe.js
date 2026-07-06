@@ -1,9 +1,9 @@
 import express from 'express';
 import { authentication } from '../middleware/auth.js';
 import db from '../src/index.js';
-import { recipeNutritionTable, recipesTable } from '../models/user.model.js';
+import { recipeNutritionTable, recipesTable, recipeIngredientsTable } from '../models/user.model.js';
 import { and, eq } from 'drizzle-orm';
-import { idPantryValidation } from '../validators/signupValidation.js';
+import { idPantryValidation,createMealPlanSchema, createRecipeSchema } from '../validators/signupValidation.js';
 
 const recipeRouter = express.Router();
 
@@ -13,10 +13,24 @@ recipeRouter.post('/create', authentication, async(req,res) => {
         
     const userId = req.user.id;
 
-    const {name, description, cuisine, difficulty, prepTime, servings, instructions, 
-            nutrition }// expecting : {calories, protein, carbs, fats, fibers}
-             = req.body;
-    
+    const validation = await createRecipeSchema.safeParseAsync(req.body)
+
+    // const {name, description, cuisine, difficulty, prepTime, servings, instructions, 
+    //         nutrition }// expecting : {calories, protein, carbs, fats, fibers}
+    //          = req.body;
+
+    const {
+            name,
+            description,
+            cuisine,
+            difficulty,
+            prepTime,
+            servings,
+            instructions,
+            nutrition,
+            ingredients
+        } = validation.data;
+
     if(!name || !instructions ){
         return res.status(400).json({error : `name and instruction both are required`})
     }
@@ -39,9 +53,9 @@ recipeRouter.post('/create', authentication, async(req,res) => {
             description,
             cuisine,
             difficulty,
-            prepTime : prepTime? Number(prepTime) : null,
-            servings : servings? Number(servings) : null,
-            instructions,
+            prepTime : prepTime? prepTime : null,
+            servings : servings? servings : null,
+            instructions, // jsonb natively stores our steps array
         }).returning();
 
         //Insert Nutrition Row if data is provided
@@ -52,17 +66,32 @@ recipeRouter.post('/create', authentication, async(req,res) => {
         if(nutrition && Object.keys(nutrition).length>0){
             [insertedNutrition] = await tx.insert(recipeNutritionTable).values({
                 recipeId : newRecipe.id,
-                calories : nutrition.calories ? Number(nutrition.calories) : null,
-                protein: nutrition.protein ? Number(nutrition.protein) : null,
-                carbs: nutrition.carbs ? Number(nutrition.carbs) : null,
-                fats: nutrition.fats ? Number(nutrition.fats) : null,
-                fiber: nutrition.fiber ? Number(nutrition.fiber) : null,
+                calories : nutrition.calories ? nutrition.calories : null,
+                protein: nutrition.protein ? nutrition.protein : null,
+                carbs: nutrition.carbs ? nutrition.carbs : null,
+                fats: nutrition.fats ? nutrition.fats : null,
+                fiber: nutrition.fiber ? nutrition.fiber : null,
             }).returning();
+        }
+
+        let insertedIngredient = []; // this is not null cuz its not optional, its mendatory so we kept it as arrays
+
+        if(ingredients && Object.keys(nutrition).length > 0){
+
+           const formattedIngredients = ingredients.map(ing => ({
+                    recipeId: newRecipe.id,
+                    name: ing.name,
+                    quantity: String(ing.quantity), // Pg numeric handles decimals accurately when passed as string
+                    unit: ing.unit
+                })); 
+            // it is already an array thats why we did not put it in an array brackets
+            insertedIngredient = await tx.insert(recipeIngredientsTable).values(formattedIngredients).returning();
         }
 
         return {
                 ...newRecipe,
-                nutrition: insertedNutrition
+                nutrition: insertedNutrition,
+                ingredients: insertedIngredients
             };
 
 
