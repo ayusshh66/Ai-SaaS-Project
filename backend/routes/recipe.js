@@ -201,38 +201,66 @@ recipeRouter.patch('/update/:id', authentication, async(req,res) =>{
             res.status(500).json({error : request.error.format})
         }
 
-        const {id} = request.data;
+        const {recipeId} = request.data;
 
         // name cuisin etc will be stored inside recipeUpdate and nutrition such as calories etc will be there in nutrition
-        const {nutrition, ...recipeUpdates} = req.body;
+        const {nutrition, ...recipeUpdates, ingredients} = req.body;
 
-        const updateResult = await db.transaction(async(tx) => {
+        const updatedResult = await db.transaction(async(tx) => {
 
             //updating parent recipe
+            const [existing] = await tx.select().from(recipesTable).where(and(eq(recipesTable.id, recipeId), eq(recipesTable.userId, userId)));
+            if (!existing) return null;
 
-            const [updateRecipe] = await tx.update(recipesTable).set({
-                recipeUpdates,
-            }).where(and(eq(recipesTable.id, id , eq(recipesTable.userId, userId)))).returning();
+            let updatedRecipe = null;
+            if (Object.keys(recipeUpdates).length > 0) {
+                [updatedRecipe] = await tx
+                    .update(recipesTable)
+                    .set(recipeUpdates)
+                    .where(and(eq(recipesTable.id, recipeId), eq(recipesTable.userId, userId)))
+                    .returning();
+            } else {
+                updatedRecipe = existing;
+            }
 
-            if (!updatedRecipe) return null;
+            let updatedNutrition = null;
 
-            let updateNutrition = null;
-
-            if(nutrition){
-                const [updateNutrition] = await tx.update(recipeNutritionTable).insert({
+            if (nutrition) {
+                [updatedNutrition] = await tx
+                    .insert(recipeNutritionTable)
+                    .values({
                         recipeId: recipeId,
-                        calories: nutrition.calories,
-                        protein: nutrition.protein,
-                        carbs: nutrition.carbs,
-                        fats: nutrition.fats,
-                        fiber: nutrition.fiber,
-                }).onConflictDoUpdate({
-                    calories: nutrition.calories,
-                    protein: nutrition.protein,
-                    carbs: nutrition.carbs,
-                    fats: nutrition.fats,
-                    fiber: nutrition.fiber,
-                }).returning();
+                        calories: nutrition.calories ?? null,
+                        protein: nutrition.protein ?? null,
+                        carbs: nutrition.carbs ?? null,
+                        fats: nutrition.fats ?? null,
+                        fiber: nutrition.fiber ?? null,
+                    })
+                    .onConflictDoUpdate({
+                        target: recipeNutritionTable.recipeId, 
+                        set: {
+                            calories: nutrition.calories,
+                            protein: nutrition.protein,
+                            carbs: nutrition.carbs,
+                            fats: nutrition.fats,
+                            fiber: nutrition.fiber,
+                        }
+                    })
+                    .returning();
+            }
+
+            if (ingredients && Array.isArray(ingredients)) {
+                await tx.delete(recipeIngredientsTable).where(eq(recipeIngredientsTable.recipeId, recipeId));
+                
+                if (ingredients.length > 0) {
+                    const formattedIngredients = ingredients.map(ing => ({
+                        recipeId,
+                        name: ing.name,
+                        quantity: String(ing.quantity),
+                        unit: ing.unit
+                    }));
+                    await tx.insert(recipeIngredientsTable).values(formattedIngredients);
+                }
             }
 
             return { ...updatedRecipe, nutrition: updatedNutrition };
