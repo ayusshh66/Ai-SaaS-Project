@@ -99,7 +99,7 @@ recipeRouter.post('/create', authentication, async(req,res) => {
     
     return res.status(201).json({
             status: "success",
-            message: "Recipe with nutritional card created successfully!",
+            message: "Recipe created successfully!",
             data: recipeResult
         });
 
@@ -159,23 +159,28 @@ recipeRouter.get("/", authentication, async(req,res) => {
         const finalOrder = sort_order === 'asc' ? sortColumn : desc(sortColumn);
 
         //we dont put result as an array cuz we dont want 1 result we want all the search items 
-        const result = await db.select({
-            recipe : recipesTable,
-            nutrition : recipeNutritionTable,
-        }).from(recipesTable).where(and(...condition)).orderBy(finalOrder)
-            .limit(queryLimit)
-            .offset(queryOffset);
+        // Fetch using Drizzle's clean Relational Query API
+        const results = await db.query.recipesTable.findMany({
+            where: and(...conditions),
+            orderBy: finalOrder,
+            limit: queryLimit,
+            offset: queryOffset,
+            with: {
+                ingredients: true,
+                nutrition: true
+            }
+        });
         
          // Map results back into a clean nested object structure for the frontend
-        const formattedResults = results.map(row => ({
-            ...row.recipe,
-            nutrition: row.nutrition // Nested directly inside each recipe object!
-        }));
+        // const formattedResults = results.map(row => ({
+        //     ...row.recipe,
+        //     nutrition: row.nutrition // Nested directly inside each recipe object!
+        // }));
 
         return res.status(200).json({
             status: "success",
-            count: formattedResults.length,
-            data: formattedResults
+            count: results.length,
+            data: results,
         });
 
     } catch (error) {
