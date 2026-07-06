@@ -56,6 +56,15 @@ export const recipeNutritionTable = pgTable('recipe_nutrition', {
   fiber: integer('fiber'),     // in grams
 });
 
+//recipe ingredients 
+export const recipeIngredientsTable = pgTable('recipe_ingredients', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  recipeId: uuid('recipe_id').references(() => recipesTable.id, { onDelete: 'cascade' }).notNull(),
+  name: text('name').notNull(),
+  quantity: numeric('quantity').notNull(),
+  unit: text('unit').notNull()
+});
+
 //MEAL PLANS eg. breakfast, lunch, dinner
 export const mealPlansTable = pgTable('meal_plans', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -88,7 +97,9 @@ export const shoppingListItemsTable = pgTable('shopping_list_items', {
 export const usersRelations = relations(usersTable, ({ many, one }) => ({
   pantryItems: many(pantryItemsTable),
   recipes: many(recipesTable),
-  preferences : one(userPreferencesTable)
+  mealPlans: many(mealPlansTable),
+  shoppingListItems: many(shoppingListItemsTable),
+  preferences: one(userPreferencesTable)
 }));
 
 export const pantryItemsRelations = relations(pantryItemsTable, ({ one }) => ({
@@ -103,3 +114,8 @@ export const recipesRelations = relations(recipesTable, ({ one }) => ({
 export const recipeNutritionRelations = relations(recipeNutritionTable, ({ one }) => ({
   recipe: one(recipesTable, { fields: [recipeNutritionTable.recipeId], references: [recipesTable.id] })
 }));
+
+export const recipeIngredientsRelations = relations(recipeIngredientsTable, ({ one }) => ({
+  recipe: one(recipesTable, { fields: [recipeIngredientsTable.recipeId], references: [recipesTable.id] })
+}));  
+
