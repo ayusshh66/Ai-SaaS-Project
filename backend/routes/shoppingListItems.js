@@ -1,6 +1,6 @@
 import express from 'express';
 import { authentication } from '../middleware/auth.js';
-import { createItemSchema, generateListSchema } from '../validators/signupValidation.js';
+import { createItemSchema, generateListSchema, idParamSchema } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { mealPlansTable, pantryItemsTable, recipeIngredientsTable, shoppingListItemsTable } from '../models/user.model.js';
 
@@ -154,6 +154,34 @@ shoppingListRouter.get("/", authentication, async (req, res) => {
     }
 });
 
+shoppingListRouter.delete('/delete/:id', authentication, async(req,res) => {
 
+    try {
+        
+        const userId = req.user.id;
+
+        const validation = await idParamSchema.safeParseAsync(req.params);
+
+        if(validation.error){
+            return res.status(500).json({error : validation.error.format()})
+        }
+
+        const itemId = validation.data;
+
+        const [deleteItem]= await db.delete(shoppingListItemsTable).where(and(eq(shoppingListItemsTable.userId, userId), eq(shoppingListItemsTable.id, itemId))).returning()
+
+        if(!deleteItem){
+            return res.status(400).json({error : "there is no item with the id given"})
+        }
+        return res.status(200).json({
+            status : "succes",
+            message : "deleted succesfully",
+            delete_items : deleteItem
+        })
+
+    } catch (error) {
+        return res.status(400).json({error : "Internal Server Error"})
+    }
+})
 
 export default shoppingListRouter;
