@@ -94,4 +94,11 @@ const idParamSchema = z.object({
     id: z.string().uuid("Invalid shopping list item ID format")
 });
 
+export const createItemSchema = z.object({
+    ingredient_name: z.string().min(1, "Ingredient name is required"),
+    quantity: z.string().min(1, "Quantity is required"), // Decimal quantities supported as string
+    unit: z.string().min(1, "Unit is required"),
+    category: z.string().optional()
+});
+
 

@@ -1,6 +1,6 @@
 import express from 'express';
 import { authentication } from '../middleware/auth.js';
-import { generateListSchema } from '../validators/signupValidation.js';
+import { createItemSchema, generateListSchema } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { mealPlansTable, pantryItemsTable, recipeIngredientsTable, shoppingListItemsTable } from '../models/user.model.js';
 
@@ -90,6 +90,41 @@ shoppingListRouter.post('/generate', authentication, async(req,res) => {
 
     } catch (error) {
         return res.status(400).json({error : `Internal Server Error`})
+    }
+
+})
+
+shoppingListRouter.post('/create', authentication, async(req,res) => {
+
+    try {
+        
+        const userId = req.user.id;
+
+        const validation = await createItemSchema.safeParseAsync(req.body);
+
+        if(validation.error){
+            return res.status(400).json({error : validation.error.format()})
+        }
+
+        const {ingredient_name, quantity, unit, category} = validation.data;
+
+        const [shoppingListItems] = await db.insert(shoppingListItemsTable).values({
+                userId,
+                ingredientName: ingredient_name,
+                quantity,
+                unit,
+                category: category || "Uncategorized",
+                fromMealPlan: false
+        }).returning();
+
+        return res.status(201).json({
+            status: "success",
+            message: "Shopping list item created successfully",
+            data: newItem
+        });
+
+    } catch (error) {
+        return res.status(400).json({error : "Internal Server Error"})
     }
 
 })
