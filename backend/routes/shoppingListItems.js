@@ -129,4 +129,31 @@ shoppingListRouter.post('/create', authentication, async(req,res) => {
 
 })
 
+shoppingListRouter.get("/", authentication, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const items = await db
+            .select()
+            .from(shoppingListItemsTable)
+            .where(eq(shoppingListItemsTable.userId, userId))
+            .orderBy(
+                asc(shoppingListItemsTable.category),
+                asc(shoppingListItemsTable.ingredientName)
+            );
+
+        return res.status(200).json({
+            status: "success",
+            count: items.length,
+            data: items
+        });
+
+    } catch (error) {
+        console.error("Error fetching shopping list:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
+
 export default shoppingListRouter;
