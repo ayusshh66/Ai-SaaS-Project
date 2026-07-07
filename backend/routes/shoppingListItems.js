@@ -1,5 +1,8 @@
 import express from 'express';
 import { authentication } from '../middleware/auth.js';
+import { generateListSchema } from '../validators/signupValidation.js';
+import db from '../src/index.js';
+import { mealPlansTable, pantryItemsTable, recipeIngredientsTable, shoppingListItemsTable } from '../models/user.model.js';
 
 const shoppingListRouter = express.Router();
 
@@ -9,7 +12,81 @@ shoppingListRouter.post('/generate', authentication, async(req,res) => {
         
         const userId = req.user.id;
 
-        
+        const validation = await generateListSchema.safeParseAsync(req.body);
+
+        if(validation.error){
+            return res.status(500).json({error : validation.error.format()})
+        }
+
+        const { startDate, endDate } = validation.data;
+
+        const resultList = await db.transaction(async(tx) => {
+
+            //clears previous auto generated list
+            await tx.delete(shoppingListItemsTable).where(and(eq(shoppingListItemsTable.userId, userId) , eq(shoppingListItemsTable, true)))
+
+            const recipeIngredients = await tx.select({
+                ingredients : recipeIngredientsTable.ingredients,
+                unit : recipeIngredientsTable.unit,
+                totalQuantity: sql`SUM(${recipeIngredientsTable.quantity})`.mapWith(Number),
+            }).from(mealPlansTable).where(and(
+                        eq(mealPlansTable.userId, userId),
+                        gte(mealPlansTable.mealDate, startDate),
+                        lte(mealPlansTable.mealDate, endDate))).groupBy(recipeIngredientsTable.name, recipeIngredientsTable.unit);
+
+            const pantryItems = await tx.select({
+                name : pantryItemsTable.name,
+                unit : pantryItemsTable.unit,
+                quantity : pantryItemsTable.quantity
+            }).from(pantryItemsTable).where(eq(pantryItemsTable.userId, userId))
+
+            //Map pantry items to an O(1) hash map for ultra-fast checks
+            const pantryMap = new Map();
+            pantryItems.forEach((item) => {
+                const key = `${item.name.toLowerCase()}_${item.unit}`;
+                pantryMap.set(key, Number(item.quantity || 0));
+            });
+
+            //Loop over needed ingredients, subtract what is in stock, and prepare bulk insert
+            const itemsToInsert = [];
+            for (const ing of recipeIngredients) {
+                const key = `${ing.ingredientName.toLowerCase()}_${ing.unit}`;
+                const pantryQty = pantryMap.get(key) || 0;
+                const neededQty = Math.max(0, Number(ing.totalQuantity) - pantryQty);
+
+                if (neededQty > 0) {
+                    itemsToInsert.push({
+                        userId,
+                        ingredientName: ing.ingredientName,
+                        quantity: String(neededQty),
+                        unit: ing.unit,
+                        fromMealPlan: true,
+                        category: "Uncategorized"
+                    });
+                }
+            }
+
+            if (itemsToInsert.length > 0) {
+                await tx.insert(shoppingListItemsTable).values(itemsToInsert);
+            }
+
+            return await tx
+                .select()
+                .from(shoppingListItemsTable)
+                .where(eq(shoppingListItemsTable.userId, userId))
+                .orderBy(
+                    asc(shoppingListItemsTable.category),
+                    asc(shoppingListItemsTable.ingredientName)
+                );
+
+        })
+
+        return res.status(200).json({
+            status: "success",
+            message: "Smart shopping list generated successfully",
+            count: resultList.length,
+            data: resultList
+        });
 
     } catch (error) {
         return res.status(400).json({error : `Internal Server Error`})
