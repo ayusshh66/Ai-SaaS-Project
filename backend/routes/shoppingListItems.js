@@ -3,6 +3,7 @@ import { authentication } from '../middleware/auth.js';
 import { createItemSchema, generateListSchema, idParamSchema, updateItemSchema } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { mealPlansTable, pantryItemsTable, recipeIngredientsTable, shoppingListItemsTable } from '../models/user.model.js';
+import { asc } from 'drizzle-orm';
 
 const shoppingListRouter = express.Router();
 
@@ -223,6 +224,61 @@ shoppingListRouter.patch("/update/:id", authentication, async(req,res) => {
 
     } catch (error) {
         return res.status(500).json({error : "Inernal Server Error"})
+    }
+
+})
+
+shoppingListRouter.get('/grouped', authentication, async(req,res) => {
+
+    try {
+        
+        const userId = req.user.id;
+
+        //[
+//   { "name": "Apple", "category": "Produce" },
+//   { "name": "Milk", "category": "Dairy" },
+//   { "name": "Tomato", "category": "Produce" },
+//   { "name": "Cheese", "category": "Dairy" }
+// ]
+        const flatItems = await db.select().from(shoppingListItemsTable).where(eq(shoppingListItemsTable.userId, userId)).orderBy(asc(shoppingListItemsTable.category))
+
+        const groupedObject = {};
+
+        flatItems.forEach((items) => {
+
+            const cat = items.category || "Uncategorized" 
+
+            // If this category doesn't exist in our object yet, create an empty list
+            if(!groupedObject[cat]){
+                groupedObject[cat] = [];
+            }
+
+            // Push the clean item properties into its matching category bucket
+            groupedObject[cat].pus({
+                id: items.id,
+                ingredient_name: items.ingredientName,
+                quantity: items.quantity,
+                unit: items.unit,
+                is_checked: items.isChecked,
+                from_meal_plan: items.fromMealPlan
+            })
+        })
+
+        const formattedResult = Object.keys(groupedObject).map((categoryName) => ({
+            category : categoryName,
+            items : groupedObject[categoryName]
+        }))
+
+        return res.status(200).json({
+            status: "success",
+            count: formattedResult.length,
+            data: formattedResult
+        });
+
+    } catch (error) {
+        return res.status(400).json({
+            error : "Internal Server Error"
+        })
     }
 
 })
