@@ -101,4 +101,12 @@ export const createItemSchema = z.object({
     category: z.string().optional()
 });
 
+export const updateItemSchema = z.object({
+    ingredient_name: z.string().optional(),
+    quantity: z.string().optional(),
+    unit: z.string().optional(),
+    category: z.string().optional(),
+    is_checked: z.boolean().optional()
+});
+
 
