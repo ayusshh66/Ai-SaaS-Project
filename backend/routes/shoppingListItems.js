@@ -1,6 +1,6 @@
 import express from 'express';
 import { authentication } from '../middleware/auth.js';
-import { createItemSchema, generateListSchema, idParamSchema } from '../validators/signupValidation.js';
+import { createItemSchema, generateListSchema, idParamSchema, updateItemSchema } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { mealPlansTable, pantryItemsTable, recipeIngredientsTable, shoppingListItemsTable } from '../models/user.model.js';
 
@@ -182,6 +182,49 @@ shoppingListRouter.delete('/delete/:id', authentication, async(req,res) => {
     } catch (error) {
         return res.status(400).json({error : "Internal Server Error"})
     }
+})
+
+shoppingListRouter.patch("/update/:id", authentication, async(req,res) => {
+
+    try {
+        
+    const userId = req.user.id;
+
+    const request = await idParamSchema.safeParseAsync(req.params);
+
+    if(request.error){
+        return res.status(400).json({error : request.error.format()})
+    }
+
+    const itemId = request.data;
+
+    const validation = await updateItemSchema.safeParseAsync(req.body);
+
+    if(validation.error){
+        return res.status(400).json({error : validation.error.format()})
+    }
+
+    const {ingredient_name, quantity, unit, category, is_checked} = validation.data;
+
+    const [updateItem] = await db.update(shoppingListItemsTable).set({
+        ingredientName : ingredient_name,
+        unit,
+        quantity,
+        category,
+        isChecked : is_checked,
+        updatedAt : new Date(),
+    }).where(and(eq(shoppingListItemsTable.id, itemId), eq(shoppingListItemsTable.userId, userId))).returning()
+
+    return res.status(200).json({
+        status : "success",
+        message : "updated successfully",
+        updated_items : updateItem,
+    })
+
+    } catch (error) {
+        return res.status(500).json({error : "Inernal Server Error"})
+    }
+
 })
 
 export default shoppingListRouter;
