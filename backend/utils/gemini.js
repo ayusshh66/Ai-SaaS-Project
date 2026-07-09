@@ -20,7 +20,7 @@ export const generateRecipe = async ({ ingredients, dietaryRestrictions = [], cu
         medium: '30-60 minutes',
         long: 'over 60 minutes'
     };
-};
+
 
 const prompt = `Generate a detailed recipe with the following requirements:
     "cuisineType": "${cuisineType}",
@@ -46,4 +46,64 @@ const prompt = `Generate a detailed recipe with the following requirements:
     "cookingTips": ["Tip 1", "Tip 2"]
     }
     Make sure the recipe is creative, delicious, and uses the provided ingredients effectively.`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+        });
+
+        const generatedText = response.text.trim();
+
+        // Remove markdown code blocks if present
+        let jsonText = generatedText;
+        if (jsonText.startsWith('```json')) {
+            jsonText = jsonText.replace(/^```json\n?/g, '').replace(/```$/g, '');
+        } else if (jsonText.startsWith('```')) {
+            jsonText = jsonText.replace(/^```\n?/g, '').replace(/```$/g, '');
+        }
+
+        const recipe = JSON.parse(jsonText);
+        return recipe;
+    } catch (error) {
+        console.error('Gemini API error:', error);
+        throw new Error('Failed to generate recipe. Please try again.');
+    }
+};
+
+// Suggests quick meal ideas using available and expiring ingredients
+
+export const generatePantrySuggestions = async (pantryItems, expiringItems = []) => {
+    const ingredients = pantryItems.map(item => item.name).join(', ');
+    const expiringText = expiringItems.length > 0
+        ? `\nPriority ingredients (expiring soon): ${expiringItems.join(', ')}`
+        : '';
+
+    const prompt = `Based on these available ingredients: ${ingredients}${expiringText}
+    Suggest 3 creative recipe ideas that use these ingredients. Return ONLY a JSON array of strings (no markdown):
+    ["Recipe idea 1", "Recipe idea 2", "Recipe idea 3"]
+    Each suggestion should be a brief, appetizing description (1-2 sentences).`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+        });
+
+        let generatedText = response.text.trim();
+
+        // Remove markdown if present
+        if (generatedText.startsWith('```json')) {
+            generatedText = generatedText.replace(/^```json\n?/g, '').replace(/```$/g, '');
+        } else if (generatedText.startsWith('```')) {
+            generatedText = generatedText.replace(/^```\n?/g, '').replace(/```$/g, '');
+        }
+
+        const suggestions = JSON.parse(generatedText);
+        return suggestions;
+    } catch (error) {
+        console.error('Gemini API error:', error);
+        throw new Error('Failed to generate suggestions');
+    }
+};
 
