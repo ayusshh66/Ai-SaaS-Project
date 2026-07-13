@@ -49,4 +49,43 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-}
+    const register = async (firstName, lastName, userName, password, email) => {
+        try {
+
+            const response = await api.post('/api/users/signup', {firstName, lastName, userName, password, email});
+            const {user, token} = response.data.data;
+
+            localStorage.setItem("token", token);
+            localStorage.setItem("user", JSON.stringify(user));
+
+            setUser(user);
+
+            return {success : true}
+            
+        } catch (error) {
+            return {
+                success : false ,
+                message :error.response?.data?.message || "sign up"
+            }
+        }
+    };
+
+    const logout = () => {
+         localStorage.removeItem("token");
+         localStorage.removeItem("user");
+         
+         setUser(null)
+
+    };
+
+    const value = {
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        isAuthenticated: !!user
+    };
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
