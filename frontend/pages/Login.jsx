@@ -28,11 +28,11 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-emerald-50 to-white flex items-center justify-center p-4">
+        <div className="min-h-screen bg-linear-to-br from-orange-50 to-white flex items-center justify-center p-4 selection:bg-amber-500">
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-500 rounded-2xl mb-4">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500 rounded-2xl mb-4">
                         <ChefHat className="w-9 h-9 text-white" />
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
@@ -54,7 +54,7 @@ const Login = () => {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full pl-11 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                                     placeholder="you@example.com"
                                     required
                                 />
@@ -73,7 +73,7 @@ const Login = () => {
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full pl-11 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                                     placeholder="••••••••"
                                     required
                                 />
@@ -82,7 +82,7 @@ const Login = () => {
 
                         {/* Forgot Password */}
                         <div className="flex items-center justify-end">
-                            <Link to="/reset-password" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                            <Link to="/reset-password" className="text-sm text-orange-600 hover:text-orange-700 font-medium">
                                 Forgot password?
                             </Link>
                         </div>
@@ -91,7 +91,7 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? 'Signing in...' : 'Sign In'}
                         </button>
@@ -100,7 +100,7 @@ const Login = () => {
                     {/* Sign Up Link */}
                     <p className="text-center text-sm text-gray-600 mt-6">
                         Don't have an account?{' '}
-                        <Link to="/signup" className="text-emerald-600 hover:text-emerald-700 font-medium">
+                        <Link to="/signup" className="text-orange-600 hover:text-orange-700 font-medium">
                             Sign up
                         </Link>
                     </p>
