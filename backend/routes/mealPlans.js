@@ -5,7 +5,7 @@ import db from '../src/index.js';
 import { mealPlansTable, recipesTable } from '../models/user.model.js';
 import {eq, lte,and, or, gte, asc, desc} from "drizzle-orm"
 
-const mealPlanRouter = express.Router;
+const mealPlanRouter = express.Router();
 
 mealPlanRouter.post("/create", authentication, async(req,res) => {
 

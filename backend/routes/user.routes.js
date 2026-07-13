@@ -79,7 +79,7 @@ router.post('/login', async(req,res) => {
         const oldHashedPassword = exisitingUser.password;
         const newHashedPassword = createHmac("sha256",salt).update(password).digest('hex');
 
-        if(!newHashedPassword === oldHashedPassword){
+        if(newHashedPassword !== oldHashedPassword){
             return res.status(400).json({error : `the password is not correct, try again`})
         }
 
@@ -87,8 +87,11 @@ router.post('/login', async(req,res) => {
 
         return res.status(200).json({status : `success`, data : {
             token : token,
-            name : exisitingUser.name,
-            email : exisitingUser.email
+            user : {
+                user: {
+            name: exisitingUser.name,
+            email: exisitingUser.email        }
+            }
         }})
 
     } catch (error) {

@@ -1,8 +1,17 @@
 import React from 'react'
+import Login from '../pages/Login'
+import { AuthProvider } from '../context/AuthContext'
+import { BrowserRouter } from 'react-router-dom'
 
 function App() {
   return (
-    <div className='bg-red-500'>App</div>
+    <>
+    <AuthProvider>
+      <BrowserRouter>
+    <Login/>  
+    </BrowserRouter>
+    </AuthProvider>
+    </>
   )
 }
 
