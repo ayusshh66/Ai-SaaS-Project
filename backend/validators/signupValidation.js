@@ -1,4 +1,4 @@
-import { boolean, email, z, uuid, int, nonnegative, optional, min, max, regex } from "zod";
+import { boolean, email, z, uuid, int, nonnegative, optional, regex } from "zod";
 
 export const signUpValidation =  z.object({
     firstName : z.string(),
@@ -90,9 +90,9 @@ export const generateListSchema = z.object({
     endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "End date must be in YYYY-MM-DD format")
 });
 
-const idParamSchema = z.object({
-    id: z.string().uuid("Invalid shopping list item ID format")
-});
+// const idParamSchema = z.object({
+//     id: z.string().uuid("Invalid shopping list item ID format")
+// });
 
 export const createItemSchema = z.object({
     ingredient_name: z.string().min(1, "Ingredient name is required"),

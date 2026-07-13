@@ -1,4 +1,4 @@
-import { pgTable, varchar, text, timestamp, uuid, integer, numeric, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, varchar, text, timestamp, uuid, integer, numeric, boolean, jsonb, date, unique } from "drizzle-orm/pg-core";
 import { relations } from 'drizzle-orm';
 import { userPreferencesTable } from "./user.preferences.model.js";
 

@@ -204,7 +204,7 @@ recipeRouter.patch('/update/:id', authentication, async(req,res) =>{
         const {recipeId} = request.data;
 
         // name cuisin etc will be stored inside recipeUpdate and nutrition such as calories etc will be there in nutrition
-        const {nutrition, ...recipeUpdates, ingredients} = req.body;
+        const {nutrition,ingredients,  ...recipeUpdates} = req.body;
 
         const updatedResult = await db.transaction(async(tx) => {
 
