@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        // checks it user is logged in or nott
+        // checks it user is logged in or not
         const token = localStorage.getItem('token');
         const user = localStorage.getItem('user');
 
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
 
     }, []);
 
-    const login = async (email, password) => {
+    const login = async (email, password) => { 
         try {
 
             const response = await api.post('/users/login', {identifier:email, password});

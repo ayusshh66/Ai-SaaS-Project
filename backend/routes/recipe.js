@@ -76,7 +76,7 @@ recipeRouter.post('/create', authentication, async(req,res) => {
 
         let insertedIngredient = []; // this is not null cuz its not optional, its mendatory so we kept it as arrays
 
-        if(ingredients && Object.keys(nutrition).length > 0){
+        if(ingredients && ingredients.length > 0){
 
            const formattedIngredients = ingredients.map(ing => ({
                     recipeId: newRecipe.id,
@@ -91,7 +91,7 @@ recipeRouter.post('/create', authentication, async(req,res) => {
         return {
                 ...newRecipe,
                 nutrition: insertedNutrition,
-                ingredients: insertedIngredients
+                ingredients: insertedIngredient
             };
 
 
