@@ -19,7 +19,19 @@ const Dashboard = () => {
         
     },[])
 
+    const fetchDashBoardData = async() =>{
 
+        try {
+
+            const [] = await Promise.all(
+                api.get('/')
+            )
+            
+        } catch (error) {
+            
+        }
+
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
