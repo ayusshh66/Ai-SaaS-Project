@@ -2,7 +2,7 @@ import express from 'express';
 import { authentication } from '../middleware/auth.js';
 import db from '../src/index.js';
 import { recipeNutritionTable, recipesTable, recipeIngredientsTable } from '../models/user.model.js';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, ilike, desc } from 'drizzle-orm';
 import { idPantryValidation,createMealPlanSchema, createRecipeSchema } from '../validators/signupValidation.js';
 
 const recipeRouter = express.Router();
@@ -109,47 +109,55 @@ recipeRouter.post('/create', authentication, async(req,res) => {
     
 })
 
-recipeRouter.get("/", authentication, async(req,res) => {
-
+recipeRouter.get("/", authentication, async (req, res) => {
     try {
-        
         const userId = req.user.id;
 
-        const {search, cuisine, difficulty, max_prep_time, 
-            max_calories, min_protein, max_fats, // NEW NUTRITION FILTER ARGUMENTS
-            sort_by, sort_order, limit, offset } = req.query;
+        const {
+            search, 
+            cuisine, 
+            difficulty, 
+            max_prep_time, 
+            max_calories, 
+            min_protein, 
+            max_fats, 
+            sort_by, 
+            sort_order, 
+            limit, 
+            offset 
+        } = req.query;
 
-        const [condition] = [eq(recipesTable.userId, userId)];
+        const conditions = [eq(recipesTable.userId, userId)];
 
         if (search) {
-            conditions.push(ilike(pantryItemsTable.name, `%${search}%`));
+            conditions.push(ilike(recipesTable.name, `%${search}%`));
         }
 
-        if(cuisine){
-            condition.push(eq(recipesTable.cuisine,cuisine))
+        if (cuisine) {
+            conditions.push(eq(recipesTable.cuisine, cuisine));
         }
         
         if (difficulty) {
-            condition.push(eq(recipesTable.difficulty, difficulty));
+            conditions.push(eq(recipesTable.difficulty, difficulty));
         }
 
         if (max_prep_time) {
-            condition.push(lte(recipesTable.prepTime, Number(max_prep_time)));
+            conditions.push(lte(recipesTable.prepTime, Number(max_prep_time)));
         }
 
         if (max_calories) {
-            condition.push(lte(recipeNutritionTable.calories, Number(max_calories)));
+            conditions.push(lte(recipeNutritionTable.calories, Number(max_calories)));
         }
 
         if (min_protein) {
-            condition.push(gte(recipeNutritionTable.protein, Number(min_protein)));
+            conditions.push(gte(recipeNutritionTable.protein, Number(min_protein)));
         }
 
         if (max_fats) {
-            condition.push(lte(recipeNutritionTable.fats, Number(max_fats)));
+            conditions.push(lte(recipeNutritionTable.fats, Number(max_fats)));
         }
 
-        //pagination
+        // Pagination
         const queryLimit = limit ? Number(limit) : 20;
         const queryOffset = offset ? Number(offset) : 0;
 
@@ -158,10 +166,9 @@ recipeRouter.get("/", authentication, async(req,res) => {
         const sortColumn = validSortColumns[sort_by] || recipesTable.createdAt;
         const finalOrder = sort_order === 'asc' ? sortColumn : desc(sortColumn);
 
-        //we dont put result as an array cuz we dont want 1 result we want all the search items 
-        // Fetch using Drizzle's clean Relational Query API
+        // Fetch using Drizzle Relational API
         const results = await db.query.recipesTable.findMany({
-            where: and(...conditions),
+            where: and(...conditions), // Spread operations work cleanly now!
             orderBy: finalOrder,
             limit: queryLimit,
             offset: queryOffset,
@@ -170,12 +177,6 @@ recipeRouter.get("/", authentication, async(req,res) => {
                 nutrition: true
             }
         });
-        
-         // Map results back into a clean nested object structure for the frontend
-        // const formattedResults = results.map(row => ({
-        //     ...row.recipe,
-        //     nutrition: row.nutrition // Nested directly inside each recipe object!
-        // }));
 
         return res.status(200).json({
             status: "success",
@@ -184,10 +185,10 @@ recipeRouter.get("/", authentication, async(req,res) => {
         });
 
     } catch (error) {
-        return res.status(500).json({error : "internal server error"})
+        console.error("GET /recipes error:", error); 
+        return res.status(500).json({ error: "internal server error" });
     }
-
-})
+});
 
 recipeRouter.patch('/update/:id', authentication, async(req,res) =>{
 
