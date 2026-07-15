@@ -225,6 +225,30 @@ recipeRouter.patch('/update/:id', authentication, async(req,res) =>{
     }
 });
 
+recipeRouter.get("/recent", authentication, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const limit = req.query.limit ? Number(req.query.limit) : 5;
+
+        const recentRecipes = await db.query.recipesTable.findMany({
+            where: eq(recipesTable.userId, userId),
+            orderBy: desc(recipesTable.createdAt), 
+            limit: limit,
+            with: {
+                ingredients: true,
+                nutrition: true
+            }
+        });
+
+        return res.status(200).json({
+            status: "success",
+            data: recentRecipes
+        });
+    } catch (error) {
+        return res.status(500).json({ error: "Internal server error fetching recent recipes" });
+    }
+});
+
 recipeRouter.delete('/delete/:id', authentication, async(req,res) => {
     try { 
         const userId = req.user.id;
