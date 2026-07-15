@@ -3,7 +3,7 @@ import { usersTable, pantryItemsTable, recipeIngredientsTable } from '../models/
 import { idPantryValidation, pantryItemValidation, pantryQuerySchema } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { authentication } from '../middleware/auth.js';
-import { desc, eq, ilike, and, or } from 'drizzle-orm';
+import { desc, eq, ilike, and, or, sql } from 'drizzle-orm';
 
 
 const pantryRouter = express.Router();

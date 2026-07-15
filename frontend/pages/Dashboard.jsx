@@ -31,6 +31,9 @@ const Dashboard = () => {
                 api.get('/meal-plans/stats'),
             ])
 
+            console.log("Recipes Stats Response:", recipesStatsRes.data);
+            console.log("Recent Recipes Response:", recentRes.data);    
+
             setStats({
                 totalRecipes : recipesStatsRes.data.data.total_recipes,
                 pantryItems : pantryRes.data.results,
