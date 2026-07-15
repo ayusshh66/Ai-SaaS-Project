@@ -16,19 +16,36 @@ const Dashboard = () => {
 
     //fetching dashboard data from api 
     useEffect(() => {
-        
+        fetchDashBoardData()
     },[])
 
     const fetchDashBoardData = async() =>{
 
         try {
 
-            const [] = await Promise.all(
-                api.get('/')
-            )
+            const [recipesRes,mealPlanRes,pantryRes,upcomingRes,recentRes] = await Promise.all([
+                api.get('/recipes/recent?limit=5'),
+                api.get('/meal-plans/upcoming?limit=5'),
+                api.get('/pantry/stats'),
+                api.get("/receipes/stats"),
+                api.get('meal-plans/stats'),
+            ])
+
+            setStats({
+                totalRecipes : recipesRes.data.data.total_recipes,
+                pantryItems : pantryRes.data.results,
+                mealsThisWeek : mealPlanRes.data.data.this_week_count
+            });
             
+            setRecentRecipes(recentRes.data.data || [])
+            setUpcomingMeals(upcomingRes.data.data || [])
+
+
+
         } catch (error) {
-            
+            console.log("error fetching the dasboard data", error)
+        }finally{
+            setLoading(false)
         }
 
     }

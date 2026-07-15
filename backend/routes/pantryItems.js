@@ -115,7 +115,7 @@ pantryRouter.patch("/update/:id", authentication, async(req,res) => {
     }
 })
 
-pantryRouter.get("/info", authentication, async (req, res) => {
+pantryRouter.get("/stats", authentication, async (req, res) => {
     try {
         const query = await pantryQuerySchema.safeParseAsync(req.query);
 
@@ -162,7 +162,7 @@ pantryRouter.get("/info", authentication, async (req, res) => {
         return res.status(200).json({
             success: true,
             results: pantryItems.length,
-            page,
+            page,   
             limit,
             data: pantryItems,
             recipe_ingredient_metrics: linkedIngredients
