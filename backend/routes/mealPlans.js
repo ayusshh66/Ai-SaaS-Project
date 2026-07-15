@@ -203,6 +203,27 @@ mealPlanRouter.delete('/delete:id', authentication, async(req,res) =>{
 
 })
 
+mealPlanRouter.get('/recent', authentication, async(req,res) => {
+
+    try {
+
+        const userId = req.user.id;
+
+        const limit = req.query.limit? Number(req.query.limit) : 5;
+
+        const recentMeal = await db.select().from(mealPlansTable).where(eq(mealPlansTable.userId, userId)).orderBy(desc(mealPlansTable.createdAt)).limit(limit)
+
+        return res.status(200).json({
+            status : "success",
+            data : recentMeal
+        })
+        
+    } catch (error) {
+       return res.status(500).json({error : "internal Server Error", error}) 
+    }  
+
+})
+
 mealPlanRouter.get("/stats", authentication, async (req, res) => {
     try {
         const userId = req.user.id;
