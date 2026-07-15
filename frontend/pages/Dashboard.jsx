@@ -23,24 +23,22 @@ const Dashboard = () => {
 
         try {
 
-            const [recipesRes,mealPlanRes,pantryRes,upcomingRes,recentRes] = await Promise.all([
+            const [recentRes, upcomingRes, pantryRes, recipesStatsRes, mealPlanStatsRes] = await Promise.all([
                 api.get('/recipes/recent?limit=5'),
                 api.get('/meal-plans/upcoming?limit=5'),
                 api.get('/pantry/stats'),
-                api.get("/receipes/stats"),
-                api.get('meal-plans/stats'),
+                api.get('/recipes/stats'),
+                api.get('/meal-plans/stats'),
             ])
 
             setStats({
-                totalRecipes : recipesRes.data.data.total_recipes,
+                totalRecipes : recipesStatsRes.data.data.total_recipes,
                 pantryItems : pantryRes.data.results,
-                mealsThisWeek : mealPlanRes.data.data.this_week_count
+                mealsThisWeek : mealPlanStatsRes.data.data.this_week_count
             });
             
             setRecentRecipes(recentRes.data.data || [])
             setUpcomingMeals(upcomingRes.data.data || [])
-
-
 
         } catch (error) {
             console.log("error fetching the dasboard data", error)
@@ -55,7 +53,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="flex items-center justify-center h-96">
-        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     </div>
   );
@@ -78,7 +76,7 @@ const Dashboard = () => {
                         icon={<ChefHat className="w-6 h-6" />}
                         label="Total Recipes"
                         value={stats.totalRecipes}
-                        color="emerald"
+                        color="orange"
                     />
                     <StatCard
                         icon={<UtensilsCrossed className="w-6 h-6" />}
@@ -98,7 +96,7 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <Link
                         to="/generate"
-                        className="bg-linear-to-r from-emerald-50 to-emerald-100 text-emerald-500 p-6 rounded-xl shadow-sm hover:shadow-md transition-all group"
+                        className="bg-linear-to-r from-orange-50 to-orange-100 text-orange-500 p-6 rounded-xl shadow-sm hover:shadow-md transition-all group"
                     >
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -106,7 +104,7 @@ const Dashboard = () => {
                             </div>
                             <div>
                                 <h3 className="font-semibold text-lg">Generate Recipe</h3>
-                                <p className="text-emerald-800 text-sm">Create AI-powered recipes</p>
+                                <p className="text-orange-800 text-sm">Create AI-powered recipes</p>
                             </div>
                         </div>
                     </Link>
@@ -116,8 +114,8 @@ const Dashboard = () => {
                         className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm hover:shadow-md transition-all group"
                     >
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <UtensilsCrossed className="w-6 h-6 text-emerald-600" />
+                            <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <UtensilsCrossed className="w-6 h-6 text-orange-600" />
                             </div>
                             <div>
                                 <h3 className="font-semibold text-lg text-gray-900">Manage Pantry</h3>
@@ -133,7 +131,7 @@ const Dashboard = () => {
                     <div className="bg-white rounded-xl border border-gray-200 p-6">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-lg font-semibold text-gray-900">Recent Recipes</h2>
-                            <Link to="/recipes" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                            <Link to="/recipes" className="text-sm text-orange-600 hover:text-orange-700 font-medium">
                                 View all
                             </Link>
                         </div>
@@ -146,8 +144,8 @@ const Dashboard = () => {
                                         to={`/recipes/${recipe.id}`}
                                         className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
                                     >
-                                        <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-                                            <ChefHat className="w-6 h-6 text-emerald-600" />
+                                        <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                            <ChefHat className="w-6 h-6 text-orange-600" />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h3 className="font-medium text-gray-900 truncate">{recipe.name}</h3>
@@ -168,7 +166,7 @@ const Dashboard = () => {
                     <div className="bg-white rounded-xl border border-gray-200 p-6">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-lg font-semibold text-gray-900">Upcoming Meals</h2>
-                            <Link to="/meal-plan" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                            <Link to="/meal-plan" className="text-sm text-orange-600 hover:text-orange-700 font-medium">
                                 View calendar
                             </Link>
                         </div>
@@ -202,7 +200,7 @@ const Dashboard = () => {
 
 const StatCard = ({ icon, label, value, color }) => {
     const colorClasses = {
-        emerald: 'bg-emerald-100 text-emerald-600',
+        orange: 'bg-orange-100 text-orange-600',
         blue: 'bg-blue-100 text-blue-600',
         purple: 'bg-purple-100 text-purple-600'
     };
