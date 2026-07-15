@@ -106,18 +106,28 @@ export const pantryItemsRelations = relations(pantryItemsTable, ({ one }) => ({
   user: one(usersTable, { fields: [pantryItemsTable.userId], references: [usersTable.id] }),
 }));
 
-export const recipesRelations = relations(recipesTable, ({ one }) => ({
-  user: one(usersTable, { fields: [recipesTable.userId], references: [usersTable.id] }),
+export const recipesRelations = relations(recipesTable, ({ one, many }) => ({
+  nutrition: one(recipeNutritionTable, {
+    fields: [recipesTable.id],          
+    references: [recipeNutritionTable.recipeId],
+  }),
+  ingredients: many(recipeIngredientsTable),
 }));
 
 // relationships for the new nutrition table
 export const recipeNutritionRelations = relations(recipeNutritionTable, ({ one }) => ({
-  recipe: one(recipesTable, { fields: [recipeNutritionTable.recipeId], references: [recipesTable.id] })
+  recipe: one(recipesTable, {
+    fields: [recipeNutritionTable.recipeId],
+    references: [recipesTable.id],
+  }),
 }));
 
 export const recipeIngredientsRelations = relations(recipeIngredientsTable, ({ one }) => ({
-  recipe: one(recipesTable, { fields: [recipeIngredientsTable.recipeId], references: [recipesTable.id] })
-}));  
+  recipe: one(recipesTable, {
+    fields: [recipeIngredientsTable.recipeId],
+    references: [recipesTable.id], 
+  }),
+}));
 
 export const mealPlansRelations = relations(mealPlansTable, ({ one }) => ({
   user: one(usersTable, { fields: [mealPlansTable.userId], references: [usersTable.id] }),
@@ -127,3 +137,4 @@ export const mealPlansRelations = relations(mealPlansTable, ({ one }) => ({
 export const shoppingListItemsRelations = relations(shoppingListItemsTable, ({ one }) => ({
   user: one(usersTable, { fields: [shoppingListItemsTable.userId], references: [usersTable.id] })
 }));
+
