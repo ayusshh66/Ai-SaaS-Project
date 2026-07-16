@@ -3,7 +3,7 @@ import { usersTable, pantryItemsTable, recipeIngredientsTable } from '../models/
 import { idPantryValidation, pantryItemValidation, pantryQuerySchema } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { authentication } from '../middleware/auth.js';
-import { desc, eq, ilike, and, or, sql } from 'drizzle-orm';
+import { desc, eq, ilike, and, or, sql, gte, lte, asc } from 'drizzle-orm';
 
 
 const pantryRouter = express.Router();
@@ -131,7 +131,7 @@ pantryRouter.get('/', authentication, async(req,res) => {
 
 })
 
-router.get("/expiring-soon", authentication, async (req, res) => {
+pantryRouter.get("/expiring-soon", authentication, async (req, res) => {
     try {
         const userId = req.user.id;
         
