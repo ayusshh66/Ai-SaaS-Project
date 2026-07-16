@@ -31,7 +31,7 @@ const SignUp = () => {
     };
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-orange-50 to-white flex items-center justify-center p-4">
+        <div className=" selection:bg-orange-300 min-h-screen bg-linear-to-br from-orange-50 to-white flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <div className="text-center mb-8">

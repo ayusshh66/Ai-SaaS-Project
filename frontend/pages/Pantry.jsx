@@ -83,7 +83,7 @@ const Pantry = () => {
 
     if (loading) {
      return (
-    <div className="min-h-screen bg-gray-50">
+    <div className=" selection:bg-orange-300 min-h-screen bg-gray-50">
       <Navbar />
       <div className="flex items-center justify-center h-96">
         <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
@@ -93,7 +93,7 @@ const Pantry = () => {
 }
 
 return (
-        <div className="min-h-screen bg-gray-50">
+        <div className=" selection:bg-orange-300 min-h-screen bg-gray-50">
             <Navbar />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -114,7 +114,7 @@ return (
 
                 {/* Expiring Soon Alert */}
                 {expiringItems.length > 0 && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                    <div className=" selection:bg-orange-300 bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
                         <div className="flex items-start gap-3">
                             <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
                             <div>
@@ -128,7 +128,7 @@ return (
                 )}
 
                 {/* Search and Filter */}
-                <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+                <div className="selection:bg-orange-300 bg-white rounded-lg border border-gray-200 p-4 mb-6">
                     <div className="flex flex-col sm:flex-row gap-4">
                         {/* Search */}
                         <div className="flex-1 relative">
@@ -143,7 +143,7 @@ return (
                         </div>
 
                         {/* Category Filter */}
-                        <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
+                        <div className="selection:bg-orange-300 flex gap-2 overflow-x-auto pb-2 sm:pb-0">
                             <CategoryButton
                                 label="All"
                                 active={selectedCategory === 'All'}
@@ -163,7 +163,7 @@ return (
 
                 {/* Items Grid */}
                 {filteredItems.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className=" selection:bg-orange-300 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filteredItems.map(item => (
                             <PantryItemCard
                                 key={item.id}
