@@ -115,6 +115,22 @@ pantryRouter.patch("/update/:id", authentication, async(req,res) => {
     }
 })
 
+pantryRouter.get('/', authentication, async(req,res) => {
+
+    try {
+        
+        const userId = req.user.id;
+
+        const userPantry = await db.select().from(pantryItemsTable).where(eq(pantryItemsTable.userId, userId));
+
+        return res.status(200).json({ data : userPantry})
+
+    } catch (error) {
+        return res.status(400).json({error : "Internal Server Error", error})
+    }
+
+})
+
 pantryRouter.get("/stats", authentication, async (req, res) => {
     try {
         const query = await pantryQuerySchema.safeParseAsync(req.query);

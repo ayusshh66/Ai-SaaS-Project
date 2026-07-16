@@ -8,7 +8,8 @@ const Dashboard = () => {
     const [stats, setStats] = useState({
         totalRecipes: 0,
         pantryItems: 0,
-        mealsThisWeek: 0
+        mealsThisWeek: 0,
+        recipeTime : 0,
     });
     const [recentRecipes, setRecentRecipes] = useState([]);
     const [upcomingMeals, setUpcomingMeals] = useState([]);
@@ -37,7 +38,8 @@ const Dashboard = () => {
             setStats({
                 totalRecipes : recipesStatsRes.data.data.total_recipes,
                 pantryItems : pantryRes.data.results,
-                mealsThisWeek : mealPlanStatsRes.data.data.this_week_count
+                mealsThisWeek : mealPlanStatsRes.data.data.this_week_count,
+                recipeTime : recipesStatsRes.data.data.avg_prep_time,
             });
             
             setRecentRecipes(recentRes.data.data || [])
@@ -53,7 +55,7 @@ const Dashboard = () => {
 
     if (loading) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 selection:bg-orange-300">
       <Navbar />
       <div className="flex items-center justify-center h-96">
         <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
@@ -63,7 +65,7 @@ const Dashboard = () => {
 }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 selection:bg-orange-300">
             <Navbar />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -154,7 +156,7 @@ const Dashboard = () => {
                                             <h3 className="font-medium text-gray-900 truncate">{recipe.name}</h3>
                                             <p className="text-sm text-gray-500 flex items-center gap-1">
                                                 <Clock className="w-3 h-3" />
-                                                {recipe.cook_time} mins
+                                                {stats.recipeTime} mins
                                             </p>
                                         </div>
                                     </Link>
