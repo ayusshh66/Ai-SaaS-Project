@@ -93,7 +93,7 @@ const Pantry = () => {
 }
 
 return (
-    <div className="min-h-screen bg-gray-50">
+    <><div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="max-w-6xl mx-auto px-4 py-8">
             {/* header */}
@@ -103,7 +103,7 @@ return (
                     <p className="text-gray-600 mt-1">Manage your ingredients and track expiry dates</p>
                 </div>
                 <button
-                    onClick={}
+                    onClick=
                     className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors"
                 >
                     <Plus className="w-5 h-5" />
@@ -125,7 +125,16 @@ return (
                 </div>
             )}
         </div>
-    </div>
+    </div><div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search ingredients..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+        </div></>
+    
   );
 }
 
