@@ -93,7 +93,7 @@ const Pantry = () => {
 }
 
 return (
-    <><div className="min-h-screen bg-gray-50">
+    <><><div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="max-w-6xl mx-auto px-4 py-8">
             {/* header */}
@@ -103,7 +103,7 @@ return (
                     <p className="text-gray-600 mt-1">Manage your ingredients and track expiry dates</p>
                 </div>
                 <button
-                    onClick=
+                    onClick
                     className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors"
                 >
                     <Plus className="w-5 h-5" />
@@ -133,10 +133,34 @@ return (
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search ingredients..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+        </div></><div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
+            <CategoryButton
+                label="All"
+                active={selectedCategory === 'All'}
+                onClick={() => setSelectedCategory('All')} />
+            {CATEGORIES.map(category => (
+                <CategoryButton
+                    key={category}
+                    label={category}
+                    active={selectedCategory === category}
+                    onClick={() => setSelectedCategory(category)} />
+            ))}
         </div></>
     
   );
 }
+
+const CategoryButton = ({ label, active, onClick }) => (
+    <button
+        onClick={onClick}
+        className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-colors ${active
+            ? 'bg-emerald-500 text-white'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+    >
+        {label}
+    </button>
+);
 
 
 export default Pantry;
