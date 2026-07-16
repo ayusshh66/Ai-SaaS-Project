@@ -3,7 +3,7 @@ import { Plus, Search, X, Calendar, AlertCircle } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
-import { dummyPantryItems, getExpiringItems } from '../data/dummyData';
+import api from '../services/api';
 
 const CATEGORIES = ['Vegetables', 'Fruits', 'Dairy', 'Meat', 'Grains', 'Spices', 'Other'];
 
@@ -18,7 +18,7 @@ const Pantry = () => {
 
     useEffect(() => {
         fetchPantryItems();
-
+        fetchExpiringItems();
     }, []);
 
     const fetchPantryItems = async() => {
@@ -40,18 +40,28 @@ const Pantry = () => {
 
         try {
 
-            const reponse = await api.get('/pantry/expiring-soon')
+            const response = await api.get('/pantry/expiring-soon')
             setExpiringItems(response.data.data.items)
             
         } catch (error) {
             toast.error("Failed to load expiring items")
         }
 
-    }
-    
+    }   
 
-    
-    
+    const handleDelete = async(id) =>{
+
+        try {
+            
+            await api.delete(`/pantry/delete/${id}`);
+            setItems(items.filter((item) => item.id !== id));
+            toast.success("pantry deleted")
+
+        } catch (error) {
+            toast.error("Failed to delete pantry")
+        }
+
+    }
 }
 
 
