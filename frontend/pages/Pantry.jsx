@@ -219,7 +219,32 @@ const PantryItemCard = ({ item, onDelete, isExpiring }) => {
         is_running_low: false
         })
 
-        
+        const [loading, setLoading] = useState(true);
+
+        const handleSubmit = async(e) => {
+
+            e.preventDefault();
+
+            try {
+                
+                await api.post('/pantry/create',{
+                    ...formData,
+                    quantity : parseFloat(formData.quantity),
+                    expiry_date : formData.expiry_date || null,
+                })
+
+                toast.success("item added to pantry");
+
+                onSuccess();
+                onClose();
+
+            } catch (error) {
+                toast.error("failed to add item")
+            }finally{
+                setLoading(false)
+            }
+
+        }
 
     }
 
