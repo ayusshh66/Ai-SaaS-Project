@@ -35,6 +35,19 @@ const Pantry = () => {
         }
 
     }
+
+    const fetchExpiringItems = async() => {
+
+        try {
+
+            const reponse = await api.get('/pantry/expiring-soon')
+            setExpiringItems(response.data.data.items)
+            
+        } catch (error) {
+            toast.error("Failed to load expiring items")
+        }
+
+    }
     
 
     
