@@ -208,5 +208,19 @@ const PantryItemCard = ({ item, onDelete, isExpiring }) => {
     );
 };
 
+    const AddItemModal = ({onClose, onSuccess}) => {
+
+        const [formData, setFormData] = useState({
+        name: '',
+        quantity: '',
+        unit: 'pieces',
+        category: 'Other',
+        expiry_date: '',
+        is_running_low: false
+        })
+
+        
+
+    }
 
 export default Pantry;
