@@ -63,6 +63,24 @@ const Pantry = () => {
 
     }
 
+    useEffect(() => {
+
+    }, [items, searchQuery,selectedCategory])
+
+    const filterItems = () => {
+        let filtered = items;
+
+        if(searchQuery){
+            filtered = filtered.filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
+        }
+
+        if(selectedCategory !== 'ALL'){
+            filtered = filtered.filter((item) => item.category == selectedCategory)
+        }
+
+        setFilteredItems(filtered)
+    }
+
     if (loading) {
      return (
     <div className="min-h-screen bg-gray-50">
@@ -75,11 +93,5 @@ const Pantry = () => {
 }
 
 }
-
-
-
-
-
-
 
 export default Pantry;
