@@ -40,7 +40,7 @@ const Pantry = () => {
 
         try {
 
-            const response = await api.get('/pantry/expiring-soon')
+            const response = await api.get('/pantry/expiring-soon?days=7')
             setExpiringItems(response.data.data.items)
             
         } catch (error) {
@@ -86,7 +86,7 @@ const Pantry = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="flex items-center justify-center h-96">
-        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     </div>
   );
@@ -105,7 +105,7 @@ return (
                     </div>
                     <button
                         onClick={() => setShowAddModal(true)}
-                        className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors"
+                        className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors"
                     >
                         <Plus className="w-5 h-5" />
                         Add Item
@@ -138,7 +138,7 @@ return (
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search ingredients..."
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                             />
                         </div>
 
@@ -199,7 +199,7 @@ const CategoryButton = ({ label, active, onClick }) => (
     <button
         onClick={onClick}
         className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-colors ${active
-            ? 'bg-emerald-500 text-white'
+            ? 'bg-orange-500 text-white'
             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
     >
@@ -264,17 +264,16 @@ const PantryItemCard = ({ item, onDelete, isExpiring }) => {
         is_running_low: false
         })
 
-        const [loading, setLoading] = useState(true);
+        const [loading, setLoading] = useState(false);
 
         const handleSubmit = async(e) => {
 
             e.preventDefault();
-
+            setLoading(true)
+        
             try {
-
-                setLoading(true)
                 
-                await api.post('/pantry/create',{
+                const response = await api.post('/pantry/create',{
                     ...formData,
                     quantity : parseFloat(formData.quantity),
                     expiry_date : formData.expiry_date || null,
@@ -309,7 +308,7 @@ const PantryItemCard = ({ item, onDelete, isExpiring }) => {
                             type="text"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                             required
                         />
                     </div>
@@ -322,7 +321,7 @@ const PantryItemCard = ({ item, onDelete, isExpiring }) => {
                                 step="0.01"
                                 value={formData.quantity}
                                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                                 required
                             />
                         </div>
@@ -332,7 +331,7 @@ const PantryItemCard = ({ item, onDelete, isExpiring }) => {
                             <select
                                 value={formData.unit}
                                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                             >
                                 <option value="pieces">Pieces</option>
                                 <option value="kg">Kilograms</option>
@@ -351,7 +350,7 @@ const PantryItemCard = ({ item, onDelete, isExpiring }) => {
                         <select
                             value={formData.category}
                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                         >
                             {CATEGORIES.map(cat => (
                                 <option key={cat} value={cat}>{cat}</option>
@@ -365,7 +364,7 @@ const PantryItemCard = ({ item, onDelete, isExpiring }) => {
                             type="date"
                             value={formData.expiry_date}
                             onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                         />
                     </div>
 
@@ -375,7 +374,7 @@ const PantryItemCard = ({ item, onDelete, isExpiring }) => {
                             id="running-low"
                             checked={formData.is_running_low}
                             onChange={(e) => setFormData({ ...formData, is_running_low: e.target.checked })}
-                            className="w-4 h-4 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500"
+                            className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
                         />
                         <label htmlFor="running-low" className="text-sm text-gray-700">
                             Mark as running low
@@ -393,7 +392,7 @@ const PantryItemCard = ({ item, onDelete, isExpiring }) => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                            className="flex-1 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                         >
                             {loading ? 'Adding...' : 'Add Item'}
                         </button>
@@ -403,7 +402,5 @@ const PantryItemCard = ({ item, onDelete, isExpiring }) => {
         </div>
     );
 };
-
-    
 
 export default Pantry;

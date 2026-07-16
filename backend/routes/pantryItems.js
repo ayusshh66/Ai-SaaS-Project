@@ -131,19 +131,25 @@ pantryRouter.get('/', authentication, async(req,res) => {
 
 })
 
-pantryRouter.get("/expiring-soon", authentication, async (req, res) => {
+pantryRouter.get('/expiring-soon', authentication, async (req, res) => {
     try {
         const userId = req.user.id;
         
-        const daysAhead = req.query.days ? Number(req.query.days) : 7;
+        const daysAhead = parseInt(req.query.day) || 7;
+
+        const today = new Date().toISOString().split('T')[0];
+
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + daysAhead);
+        const targetDateStr = futureDate.toISOString().split('T')[0];
 
         const expiringItems = await db.query.pantryItemsTable.findMany({
             where: and(
                 eq(pantryItemsTable.userId, userId),
-                gte(pantryItemsTable.expiryDate, sql`CURRENT_DATE`),
-                lte(pantryItemsTable.expiryDate, sql`CURRENT_DATE + ${daysAhead}::integer`)
+                gte(pantryItemsTable.expiryDate, today),         // Expiry date is today or later
+                lte(pantryItemsTable.expiryDate, targetDateStr)  // Expiry date is within our window
             ),
-            orderBy: asc(pantryItemsTable.expiryDate)
+            orderBy: asc(pantryItemsTable.expiryDate)            // Soonest items first
         });
 
         return res.status(200).json({
@@ -155,9 +161,9 @@ pantryRouter.get("/expiring-soon", authentication, async (req, res) => {
 
     } catch (error) {
         console.error("Error fetching expiring pantry items:", error);
-        return res.status(500).json({ 
-            status: "error", 
-            error: "Internal server error fetching expiring items" 
+        return res.status(500).json({
+            status: "error",
+            error: "Internal server error fetching expiring items"
         });
     }
 });

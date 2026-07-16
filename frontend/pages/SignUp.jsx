@@ -58,7 +58,7 @@ const SignUp = () => {
                                     value={firstName}
                                     onChange={(e) => setfirstName(e.target.value)}
                                     className="w-full pl-11 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
-                                    placeholder="John"
+                                    placeholder="jessie"
                                     required
                                 />
                             </div>
@@ -77,7 +77,7 @@ const SignUp = () => {
                                     value={lastName}
                                     onChange={(e) => setlastName(e.target.value)}
                                     className="w-full pl-11 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
-                                    placeholder="Doe"
+                                    placeholder="pinkmen"
                                     required
                                 />
                             </div>
