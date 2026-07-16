@@ -131,6 +131,37 @@ pantryRouter.get('/', authentication, async(req,res) => {
 
 })
 
+router.get("/expiring-soon", authentication, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        const daysAhead = req.query.days ? Number(req.query.days) : 7;
+
+        const expiringItems = await db.query.pantryItemsTable.findMany({
+            where: and(
+                eq(pantryItemsTable.userId, userId),
+                gte(pantryItemsTable.expiryDate, sql`CURRENT_DATE`),
+                lte(pantryItemsTable.expiryDate, sql`CURRENT_DATE + ${daysAhead}::integer`)
+            ),
+            orderBy: asc(pantryItemsTable.expiryDate)
+        });
+
+        return res.status(200).json({
+            status: "success",
+            data: {
+                items: expiringItems
+            }
+        });
+
+    } catch (error) {
+        console.error("Error fetching expiring pantry items:", error);
+        return res.status(500).json({ 
+            status: "error", 
+            error: "Internal server error fetching expiring items" 
+        });
+    }
+});
+
 pantryRouter.get("/stats", authentication, async (req, res) => {
     try {
         const query = await pantryQuerySchema.safeParseAsync(req.query);
