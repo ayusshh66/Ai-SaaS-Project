@@ -90,9 +90,9 @@ const RecipeGenerator = () => {
 
         try {
             
-            const response = await api.post("/recipes/create", {
+            const response = await api.post("/recipes/generate", {
                 ingredients,
-                usePantryIngredients,
+                usePantryIngredients : usePantry,
                 dietaryRestrictions,
                 cuisineType : cuisineType === 'Any' ? 'any' : cuisineType,
                 servings,
@@ -103,7 +103,7 @@ const RecipeGenerator = () => {
             toast.success('Recipe generated successfully')
 
         } catch (error) {
-            toast.error("")
+            toast.error("failed")
         }finally{
             setGenerating(false)
         }

@@ -17,7 +17,7 @@ function App() {
           <Route path='/signup' element={<SignUp/>}/>
           <Route path='/dashboard' element={<Dashboard/>}/>
           <Route path='/pantry' element={<Pantry/>}/>
-          <Route path='/recipeGenerate' element = {<RecipeGenerator/>}/>
+          <Route path='/generate' element = {<RecipeGenerator/>}/>
         </Routes>
     </BrowserRouter>
     </AuthProvider>

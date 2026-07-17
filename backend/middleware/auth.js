@@ -22,6 +22,7 @@ export const authentication = async(req,res,next) => {
         return next()
 
     } catch (error) {
-        return console.log(error)
+        console.error("jwt middleware error", error)
+        return res.status(401).json({ error: "Invalid or expired token" })
     }
-} 
+}

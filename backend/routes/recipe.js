@@ -1,9 +1,10 @@
 import express from 'express';
 import { authentication } from '../middleware/auth.js';
 import db from '../src/index.js';
-import { recipeNutritionTable, recipesTable, recipeIngredientsTable } from '../models/user.model.js';
+import { recipeNutritionTable, recipesTable, recipeIngredientsTable, pantryItemsTable } from '../models/user.model.js';
 import { and, eq, ilike, desc, count, countDistinct, avg, lte, gte } from 'drizzle-orm';
 import { idPantryValidation, createMealPlanSchema, createRecipeSchema } from '../validators/signupValidation.js';
+import { generateRecipe } from '../utils/gemini.js';
 
 const recipeRouter = express.Router();
 
@@ -73,7 +74,7 @@ recipeRouter.post('/generate', authentication, async (req, res) => {
         }
 
         // 4. Pass the custom combined arrays over to your Gemini API function
-        const generatedRecipe = await generateRecipeWithGemini({
+        const generatedRecipe = await generateRecipe({
             ingredients: finalIngredients,
             priorityIngredients: priorityIngredients, // Tells the AI what needs to be used up first!
             dietaryRestrictions,

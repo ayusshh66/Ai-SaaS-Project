@@ -220,32 +220,39 @@ router.post("/preference", authentication, async(req,res) =>{
 
 })
 
-router.get("/wants", authentication, async(req,res) => {
-
+router.get("/wants", authentication, async(req, res) => {
     try {
-
         const userId = req.user.id;
 
-        const profile = await db.query.usersTable.findFirst({
-            where: eq(usersTable.id,userId),
-            with : {
-                preferences : true,
-            }
-        })
+        const [preferences] = await db
+            .select()
+            .from(userPreferencesTable)
+            .where(eq(userPreferencesTable.userId, userId));
 
-        if(!profile){
-            return res.status(404).json({
-                status: "error",
-                message: "User profile not found"
-            })
+        if (!preferences) {
+            return res.status(200).json({
+                status: "success",
+                data: {
+                    preferences: {
+                        dietaryRestrictions: [],
+                        preferredCuisines: [],
+                        defaultServings: 4 // match your frontend fallback
+                    }
+                }
+            });
         }
 
-        return res.status(200).json({status : "success", data: profile})
+        return res.status(200).json({
+            status: "success",
+            data: {
+                preferences: preferences
+            }
+        });
         
     } catch (error) {
-        return res.status(500).json({error : "Internal Server Error"})
+        console.error("Error in /wants route:", error.message);
+        return res.status(500).json({ error: "Internal Server Error" });
     }
-
-})
+});
 
 export default router;
