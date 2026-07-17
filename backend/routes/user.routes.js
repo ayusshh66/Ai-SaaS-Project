@@ -215,4 +215,32 @@ router.post("/preference", authentication, async(req,res) =>{
 
 })
 
+router.get("/wants", authentication, async(req,res) => {
+
+    try {
+
+        const userId = req.user.id;
+
+        const profile = await db.query.usersTable.findFirst({
+            where: eq(usersTable.id,userId),
+            with : {
+                preferences : true,
+            }
+        })
+
+        if(!profile){
+            return res.status(404).json({
+                status: "error",
+                message: "User profile not found"
+            })
+        }
+
+        return res.status(200).json({status : "success", data: profile})
+        
+    } catch (error) {
+        return res.status(400).json({error : "Internal Server Error"})
+    }
+
+})
+
 export default router;
