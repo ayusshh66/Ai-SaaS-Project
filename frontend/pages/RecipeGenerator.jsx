@@ -185,7 +185,24 @@ const RecipeGenerator = () => {
                                 </button>
         </div>
 
-        
+        {ingredients.length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                    {ingredients.map((ingredient, index) => (
+                                        <span
+                                            key={index}
+                                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm"
+                                        >
+                                            {ingredient}
+                                            <button
+                                                onClick={() => removeIngredient(ingredient)}
+                                                className="hover:text-red-600 transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
 
 
     </>)
