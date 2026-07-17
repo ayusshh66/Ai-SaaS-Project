@@ -70,4 +70,12 @@ const RecipeGenerator = () => {
     const removeIngredient = (ingredient) => {
         setIngredients(ingredients.filter(i => i !== ingredient));
     };
+
+    const toggleDietary = (option) => {
+        if (dietaryRestrictions.includes(option)) {
+            setDietaryRestrictions(dietaryRestrictions.filter(d => d !== option));
+        } else {
+            setDietaryRestrictions([...dietaryRestrictions, option]);
+        }
+    };
 }
