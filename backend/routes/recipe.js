@@ -93,7 +93,7 @@ recipeRouter.post('/generate', authentication, async (req, res) => {
     }
 })
 
-recipeRouter.post('/', authentication, async (req, res) => {
+recipeRouter.post('/recipe', authentication, async (req, res) => {
     try {
         const userId = req.user.id;
 
@@ -145,7 +145,7 @@ recipeRouter.post('/', authentication, async (req, res) => {
                     .returning();
             }
 
-            // Step C: Insert nutrition values mapped safely to their columns
+            //Insert nutrition values 
             let savedNutrition = null;
             if (nutrition) {
                 const [nutritionResult] = await tx.insert(recipeNutritionTable).values({
@@ -160,7 +160,6 @@ recipeRouter.post('/', authentication, async (req, res) => {
                 savedNutrition = nutritionResult;
             }
 
-            // Return compilation out of transaction
             return {
                 recipe: newRecipe,
                 ingredients: savedIngredients,
@@ -168,7 +167,6 @@ recipeRouter.post('/', authentication, async (req, res) => {
             };
         });
 
-        // 3. Return successfully saved payload structure back to client state
         return res.status(201).json({
             status: "success",
             message: "Recipe along with detailed ingredients, nutrition, and tags saved!",

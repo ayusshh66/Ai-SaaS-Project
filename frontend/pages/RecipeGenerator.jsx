@@ -109,4 +109,36 @@ const RecipeGenerator = () => {
         }
 
     }
+
+    const handleSavedRecipe = async() => {
+        if(!generatedRecipe) return ;
+
+        setSaving(true);
+        try {
+
+            api.post('/recipes/recipe', {
+                name: generatedRecipe.name,
+                description : generatedRecipe.description,
+                cuisine_type : generatedRecipe.cuisineType,
+                difficulty : generatedRecipe.difficulty,
+                prep_time : generatedRecipe.prep_time,
+                cook_time: generatedRecipe.cookTime,
+                servings: generatedRecipe.servings,
+                instructions = generatedRecipe.instructions,
+                dietary_tags = generatedRecipe.dietaryTags || [],
+                ingredients = generatedRecipe.ingredient,
+                nutrition = generatedRecipe.nutrition,
+            })
+
+            toast.success("recipe successfully saved to your collection")
+            
+        } catch (error) {
+            toast.error("failed to save recipe")
+        }finally{
+            setSaving(false)
+        }
+
+
+    }   
+
 }
