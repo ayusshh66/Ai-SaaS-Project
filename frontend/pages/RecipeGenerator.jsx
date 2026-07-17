@@ -204,6 +204,20 @@ const RecipeGenerator = () => {
                                 </div>
                             )}
 
+        <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Cuisine Type</label>
+                                <select
+                                    value={cuisineType}
+                                    onChange={(e) => setCuisineType(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                                >
+                                    {CUISINES.map(cuisine => (
+                                        <option key={cuisine} value={cuisine}>{cuisine}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+
 
     </>)
 
