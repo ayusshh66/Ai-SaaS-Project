@@ -59,4 +59,11 @@ const RecipeGenerator = () => {
         fetchUserPreferences();
 
     }, [])
+
+    const addIngredient = () => {
+        if (inputValue.trim() && !ingredients.includes(inputValue.trim())) {
+            setIngredients([...ingredients, inputValue.trim()]);
+            setInputValue('');
+        }
+    };
 }
