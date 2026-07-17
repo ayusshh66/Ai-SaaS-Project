@@ -93,6 +93,94 @@ recipeRouter.post('/generate', authentication, async (req, res) => {
     }
 })
 
+recipeRouter.post('/', authentication, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const {
+            name,
+            description,
+            cuisine_type,
+            difficulty,
+            prep_time,
+            cook_time,
+            servings,
+            instructions,
+            dietary_tags = [], // Capturing the array from frontend mapping
+            ingredients = [],  // Array: [{ name: '...', quantity: 2, unit: 'g' }]
+            nutrition         // Object: { calories: 400, protein: 30, carbs: 45, fats: 12, fiber: 5 }
+        } = req.body;
+
+        // 2. Start the database transaction
+        const savedData = await db.transaction(async (tx) => {
+            
+            // Insert into recipesTable 
+            const [newRecipe] = await tx.insert(recipesTable).values({
+                userId: userId,
+                name: name,
+                description: description,
+                cuisine: cuisine_type, 
+                difficulty: difficulty,
+                prepTime: Number(prep_time || 0),   // Saved cleanly to 'prep_time'
+                cookTime: Number(cook_time || 0),   // Saved cleanly to 'cook_time'
+                servings: Number(servings || 2),
+                dietaryTags: dietary_tags,          // Saved natively to your jsonb 'dietary_tags' column
+                instructions: instructions,         // Stores steps array natively in jsonb
+            }).returning();
+
+            const recipeId = newRecipe.id;
+
+            //  Bulk insert ingredients linked to this generated recipe ID
+            let savedIngredients = [];
+            if (ingredients.length > 0) {
+                const ingredientsToInsert = ingredients.map(ing => ({
+                    recipeId: recipeId,
+                    name: ing.name,
+                    quantity: String(ing.quantity), // Kept as string to support fractional units safely
+                    unit: ing.unit
+                }));
+
+                savedIngredients = await tx.insert(recipeIngredientsTable)
+                    .values(ingredientsToInsert)
+                    .returning();
+            }
+
+            // Step C: Insert nutrition values mapped safely to their columns
+            let savedNutrition = null;
+            if (nutrition) {
+                const [nutritionResult] = await tx.insert(recipeNutritionTable).values({
+                    recipeId: recipeId,
+                    calories: Number(nutrition.calories || 0),
+                    protein: Number(nutrition.protein || 0),
+                    carbs: Number(nutrition.carbs || 0),
+                    fats: Number(nutrition.fats || 0),
+                    fiber: Number(nutrition.fiber || 0)
+                }).returning();
+                
+                savedNutrition = nutritionResult;
+            }
+
+            // Return compilation out of transaction
+            return {
+                recipe: newRecipe,
+                ingredients: savedIngredients,
+                nutrition: savedNutrition
+            };
+        });
+
+        // 3. Return successfully saved payload structure back to client state
+        return res.status(201).json({
+            status: "success",
+            message: "Recipe along with detailed ingredients, nutrition, and tags saved!",
+            data: savedData
+        });
+
+    } catch (error) {
+        console.error("Database transaction failure while saving complete recipe metadata:", error);
+        return res.status(500).json({ error: "Internal server error saving full recipe dataset structure" });
+    }
+});
+
 recipeRouter.get("/", authentication, async (req, res) => {
     try {
         const userId = req.user.id;

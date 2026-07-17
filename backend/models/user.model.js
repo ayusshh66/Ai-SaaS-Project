@@ -42,6 +42,8 @@ export const recipesTable = pgTable('recipes', {
   difficulty: text('difficulty'),
   prepTime: integer('prep_time'),
   servings: integer('servings'),
+  cookTime: integer('cook_time'),
+  dietaryTags: jsonb('dietary_tags').default([]),
   instructions: jsonb('instructions').notNull(), // stores steps array natively //jsonb used when the data is being entered by api
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
