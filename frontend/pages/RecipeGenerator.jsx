@@ -116,7 +116,7 @@ const RecipeGenerator = () => {
         setSaving(true);
         try {
 
-            api.post('/recipes/recipe', {
+           await  api.post('/recipes/recipe', {
                 name: generatedRecipe.name,
                 description : generatedRecipe.description,
                 cuisine_type : generatedRecipe.cuisineType,
@@ -133,7 +133,8 @@ const RecipeGenerator = () => {
             toast.success("recipe successfully saved to your collection")
             
         } catch (error) {
-            toast.error("failed to save recipe")
+        console.error("FAILED TO SAVE RECIPE:", error);
+        toast.error(error.response?.data?.error || "Failed to save recipe");    
         }finally{
             setSaving(false)
         }
@@ -407,7 +408,7 @@ const RecipeGenerator = () => {
                                 {/* Actions */}
                                 <div className="flex gap-3 pt-4 border-t border-gray-200">
                                     <button
-                                        onClick={handleSaveRecipe}
+                                        onClick={handleSavedRecipe}
                                         disabled={saving}
                                         className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50"
                                     >
