@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import SignUp from '../pages/SignUp'
 import Dashboard from '../pages/Dashboard'
 import Pantry from '../pages/Pantry'
+import RecipeGenerator from '../pages/RecipeGenerator'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path='/signup' element={<SignUp/>}/>
           <Route path='/dashboard' element={<Dashboard/>}/>
           <Route path='/pantry' element={<Pantry/>}/>
+          <Route path='/recipeGenerate' element = {<RecipeGenerator/>}/>
         </Routes>
     </BrowserRouter>
     </AuthProvider>

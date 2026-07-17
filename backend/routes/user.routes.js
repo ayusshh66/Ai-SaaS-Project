@@ -243,7 +243,7 @@ router.get("/wants", authentication, async(req,res) => {
         return res.status(200).json({status : "success", data: profile})
         
     } catch (error) {
-        return res.status(400).json({error : "Internal Server Error"})
+        return res.status(500).json({error : "Internal Server Error"})
     }
 
 })

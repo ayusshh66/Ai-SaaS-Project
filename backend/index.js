@@ -19,7 +19,7 @@ app.get('/', (req,res) => {
 
 app.use('/api/meal-plans',mealPlanRouter)
 app.use('/api/recipes', recipeRouter)
-app.use('/api/users', userRouter )
+app.use('/api/users', userRouter);
 app.use('/api/pantry', pantryRouter)
 app.use("/api/shopping-list", shoppingListRouter)
 
