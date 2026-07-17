@@ -168,6 +168,25 @@ const RecipeGenerator = () => {
                                 </label>
         </div>
 
+        <div className="flex gap-2 mb-4">
+                                <input
+                                    type="text"
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && addIngredient()}
+                                    placeholder="Add ingredient (e.g., tomatoes)"
+                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                                />
+                                <button
+                                    onClick={addIngredient}
+                                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                </button>
+        </div>
+
+        
+
 
     </>)
 
