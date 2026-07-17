@@ -278,6 +278,7 @@ const RecipeGenerator = () => {
                             )}
                         </button>
 
+                       <div>
                         {generatedRecipe ? (
                             <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
                                 {/* Recipe Header */}
@@ -292,6 +293,25 @@ const RecipeGenerator = () => {
                                         <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium capitalize">
                                             {generatedRecipe.difficulty}
                                         </span>
+                                        {generatedRecipe.dietaryTags?.map(tag => (
+                                            <span key={tag} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex items-center gap-6 mt-4 text-sm text-gray-600">
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="w-4 h-4" />
+                                            <span>{generatedRecipe.prepTime + generatedRecipe.cookTime} mins</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Users className="w-4 h-4" />
+                                            <span>{generatedRecipe.servings} servings</span>
+                                        </div>
+                                    </div>
+                                </div>
+
 
 
 
