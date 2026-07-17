@@ -232,6 +232,19 @@ const RecipeGenerator = () => {
                                     ))}
                                 </div>
 
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="12"
+                                    value={servings}
+                                    onChange={(e) => setServings(parseInt(e.target.value))}
+                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                                />
+                                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>1</span>
+                                    <span>12</span>
+                                </div>
+
 
 
     </>)
