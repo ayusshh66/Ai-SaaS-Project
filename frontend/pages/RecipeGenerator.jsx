@@ -245,6 +245,21 @@ const RecipeGenerator = () => {
                                     <span>12</span>
                                 </div>
 
+                                <div className="grid grid-cols-3 gap-2">
+                                    {COOKING_TIMES.map(time => (
+                                        <button
+                                            key={time.value}
+                                            onClick={() => setCookingTime(time.value)}
+                                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${cookingTime === time.value
+                                                ? 'bg-emerald-500 text-white'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                }`}
+                                        >
+                                            {time.label}
+                                        </button>
+                                    ))}
+                                </div>
+
 
 
     </>)
