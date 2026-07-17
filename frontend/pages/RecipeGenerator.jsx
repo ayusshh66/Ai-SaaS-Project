@@ -66,4 +66,8 @@ const RecipeGenerator = () => {
             setInputValue('');
         }
     };
+
+    const removeIngredient = (ingredient) => {
+        setIngredients(ingredients.filter(i => i !== ingredient));
+    };
 }
