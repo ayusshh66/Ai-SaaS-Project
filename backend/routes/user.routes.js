@@ -7,6 +7,7 @@ import { createHmac, randomBytes } from 'crypto';
 import jwt from 'jsonwebtoken'
 import 'dotenv/config'
 import { authentication } from '../middleware/auth.js';
+import { userPreferencesTable } from '../models/user.preferences.model.js';
 
 const router = express.Router();
 
@@ -174,6 +175,43 @@ router.patch("/update", authentication, async (req,res) => {
     }
 
     return res.status(200).json({ status : `success`, message : ` the userName ${newUserName} has been updated`})
+
+})
+
+router.post("/preference", authentication, async(req,res) =>{
+
+    try {
+
+        const userId = req.user.id;
+
+        const { diet, preferredCuisine, spiceLevel, allergies, dailyCalories } = req.body;
+
+        const [preference] = await db.insert(userPreferencesTable).values({
+            userId,
+            preferredCuisine,
+            spiceLevel,
+            allergies,
+            dailyCalories,
+        }).onConflictDoUpdate({
+            target : userPreferencesTable.userId,
+            set:{
+                diet,
+                preferredCuisine,
+                spiceLevel,
+                allergies,
+                dailyCalories,
+                updatedAt: new Date(),
+            }
+        }).returning();
+
+        return res.status(200).json({
+            status: "success",
+            data: savedPreferences
+        });
+        
+    } catch (error) {
+        return res.status(400).json({error : "Internal Server  Error", error})
+    }
 
 })
 

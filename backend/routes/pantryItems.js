@@ -60,7 +60,7 @@ pantryRouter.delete("/delete/:id", authentication, async(req,res) => {
             return res.status(400).json({error : `pantry item not found`})
         }
 
-        return res.status(400).json({status : `pantry item of ${userName} has been deleted`, deleted_items : deleteItems})
+        return res.status(200).json({status : `pantry item of ${userName} has been deleted`, deleted_items : deleteItems})
     } catch (error) {
         console.error(error);
         return res.status(400).json({error : `error ${error}`})
