@@ -107,6 +107,11 @@ export const pantryItemsRelations = relations(pantryItemsTable, ({ one }) => ({
 }));
 
 export const recipesRelations = relations(recipesTable, ({ one, many }) => ({
+  user: one(usersTable, {
+    fields: [recipesTable.userId],
+    references: [usersTable.id],
+  }),
+  
   nutrition: one(recipeNutritionTable, {
     fields: [recipesTable.id],          
     references: [recipeNutritionTable.recipeId],
