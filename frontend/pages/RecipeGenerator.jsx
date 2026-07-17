@@ -216,6 +216,21 @@ const RecipeGenerator = () => {
                                     ))}
                                 </select>
                             </div>
+            
+        <div className="flex flex-wrap gap-2">
+                                    {DIETARY_OPTIONS.map(option => (
+                                        <button
+                                            key={option}
+                                            onClick={() => toggleDietary(option)}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${dietaryRestrictions.includes(option)
+                                                ? 'bg-emerald-500 text-white'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                }`}
+                                        >
+                                            {option}
+                                        </button>
+                                    ))}
+                                </div>
 
 
 
