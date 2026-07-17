@@ -278,6 +278,21 @@ const RecipeGenerator = () => {
                             )}
                         </button>
 
+                        {generatedRecipe ? (
+                            <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
+                                {/* Recipe Header */}
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{generatedRecipe.name}</h2>
+                                    <p className="text-gray-600">{generatedRecipe.description}</p>
+
+                                    <div className="flex flex-wrap gap-2 mt-4">
+                                        <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">
+                                            {generatedRecipe.cuisineType}
+                                        </span>
+                                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium capitalize">
+                                            {generatedRecipe.difficulty}
+                                        </span>
+
 
 
     </>)
