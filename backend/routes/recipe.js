@@ -7,83 +7,91 @@ import { idPantryValidation, createMealPlanSchema, createRecipeSchema } from '..
 
 const recipeRouter = express.Router();
 
-recipeRouter.post('/create', authentication, async(req,res) => {
+recipeRouter.post('/generate', authentication, async (req, res) => {
     try {
         const userId = req.user.id;
-        const validation = await createRecipeSchema.safeParseAsync(req.body);
-
-        if (!validation.success) {
-            return res.status(400).json({ error: validation.error.format() });
-        }
-
-        const {
-            name,
-            description,
-            cuisine,
-            difficulty,
-            prepTime,
-            servings,
-            instructions,
-            nutrition,
-            ingredients
-        } = validation.data;
-
-        if(!name || !instructions ){
-            return res.status(400).json({error : `name and instruction both are required`})
-        }
-
-        const recipeResult = await db.transaction(async(tx) => {
-            const [newRecipe] = await tx.insert(recipesTable).values({
-                userId,
-                name,
-                description,
-                cuisine,
-                difficulty,
-                prepTime : prepTime ? prepTime : null,
-                servings : servings ? servings : null,
-                instructions, 
-            }).returning();
-
-            let insertedNutrition = null;
-            if(nutrition && Object.keys(nutrition).length > 0){
-                [insertedNutrition] = await tx.insert(recipeNutritionTable).values({
-                    recipeId : newRecipe.id,
-                    calories : nutrition.calories ? nutrition.calories : null,
-                    protein: nutrition.protein ? nutrition.protein : null,
-                    carbs: nutrition.carbs ? nutrition.carbs : null,
-                    fats: nutrition.fats ? nutrition.fats : null,
-                    fiber: nutrition.fiber ? nutrition.fiber : null,
-                }).returning();
-            }
-
-            let insertedIngredient = []; 
-            if(ingredients && ingredients.length > 0){
-                const formattedIngredients = ingredients.map(ing => ({
-                    recipeId: newRecipe.id,
-                    name: ing.name,
-                    quantity: String(ing.quantity), 
-                    unit: ing.unit
-                })); 
-                insertedIngredient = await tx.insert(recipeIngredientsTable).values(formattedIngredients).returning();
-            }
-
-            return {
-                ...newRecipe,
-                nutrition: insertedNutrition,
-                ingredients: insertedIngredient
-            };
-        });
         
-        return res.status(201).json({
+        const { 
+            ingredients = [],         // E.g., ["salt"] (manually typed chips)
+            usePantryIngredients,     // The boolean for toggle
+            dietaryRestrictions = [], 
+            cuisineType, 
+            servings = 2, 
+            cookingTime 
+        } = req.body;
+
+        let finalIngredients = [...ingredients];
+        let priorityIngredients = []; // To track items expiring soon or running low
+
+        if (usePantryIngredients === true) {
+            const userPantryList = await db
+                .select()
+                .from(pantryItemsTable)
+                .where(eq(pantryItemsTable.userId, userId));
+
+            const today = new Date();
+
+            userPantryList.forEach(item => {
+                let isPriority = item.isRunningLow === true;
+
+                // Handle the expiry date validation
+                if (item.expiryDate) {
+                    const expiry = new Date(item.expiryDate);
+                    
+                    // If the food is already expired, don't cook with it
+                    if (expiry < today) {
+                        return;
+                    }
+
+                    // If it expires within the next 3 days, flag it as high-priority
+                    const threeDaysFromNow = new Date();
+                    threeDaysFromNow.setDate(today.getDate() + 3);
+                    
+                    if (expiry <= threeDaysFromNow) {
+                        isPriority = true;
+                    }
+                }
+
+                // Push to the correct array tracking system
+                if (isPriority) {
+                    priorityIngredients.push(item.name);
+                } else {
+                    finalIngredients.push(item.name);
+                }
+            });
+
+            // Combine arrays and eliminate any duplicate ingredient names
+            finalIngredients = Array.from(new Set([...finalIngredients, ...priorityIngredients]));
+        }
+
+        // 3. Guard Clause: Make sure they provided something to work with
+        if (finalIngredients.length === 0) {
+            return res.status(400).json({
+                status: "error",
+                message: "Please add at least one ingredient or check 'Use pantry items'!"
+            });
+        }
+
+        // 4. Pass the custom combined arrays over to your Gemini API function
+        const generatedRecipe = await generateRecipeWithGemini({
+            ingredients: finalIngredients,
+            priorityIngredients: priorityIngredients, // Tells the AI what needs to be used up first!
+            dietaryRestrictions,
+            cuisineType,
+            servings,
+            cookingTime
+        });
+
+        return res.status(200).json({
             status: "success",
-            message: "Recipe created successfully!",
-            data: recipeResult
+            data: generatedRecipe
         });
 
     } catch (error) {
-        return res.status(500).json({error : "internal server error"})
+        console.error("Recipe generation failed:", error);
+        return res.status(500).json({ error: "Internal server error generating recipe" });
     }
-});
+})
 
 recipeRouter.get("/", authentication, async (req, res) => {
     try {

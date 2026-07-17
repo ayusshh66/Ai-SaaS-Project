@@ -16,7 +16,7 @@ pantryRouter.post('/create', authentication,async(req,res) => {
             return res.status(400).json({error : request.error.format()})
         }
 
-        const {name, quantity, unit , category, expirey_date, is_running_low = false } = request.data;
+        const {name, quantity, unit , category, expiry_date, is_running_low = false } = request.data;
         
         const relatedId = req.user.id;
         const userName = req.user.name;
@@ -27,7 +27,7 @@ pantryRouter.post('/create', authentication,async(req,res) => {
             quantity,
             unit,
             category,
-            expiryDate : expirey_date,
+            expiryDate : expiry_date,
             isRunningLow : is_running_low,
         }).returning();
 

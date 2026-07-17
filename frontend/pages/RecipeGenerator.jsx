@@ -78,4 +78,26 @@ const RecipeGenerator = () => {
             setDietaryRestrictions([...dietaryRestrictions, option]);
         }
     };
+
+    const handleGenerate = async() => {
+
+        if(!usePantry && ingredients.length === 0){
+            return toast.error("please add atleast one ingredient or pantry item")
+        }
+
+        setGenerating(true);
+        setGeneratedRecipe(null);
+
+        try {
+            
+            const response = await api.post("/recipes/create", {
+                ingredients,
+                usep
+            })
+
+        } catch (error) {
+            toast.error("")
+        }
+
+    }
 }
