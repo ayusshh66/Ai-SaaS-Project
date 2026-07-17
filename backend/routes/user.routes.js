@@ -184,25 +184,30 @@ router.post("/preference", authentication, async(req,res) =>{
 
         const userId = req.user.id;
 
-        const { diet, preferredCuisine, spiceLevel, allergies, dailyCalories } = req.body;
+        const { dietary_restrictions, preferred_cuisines, default_servings, spice_level, daily_calories } = req.body;
 
-        const [preference] = await db.insert(userPreferencesTable).values({
-            userId,
-            preferredCuisine,
-            spiceLevel,
-            allergies,
-            dailyCalories,
-        }).onConflictDoUpdate({
-            target : userPreferencesTable.userId,
-            set:{
-                diet,
-                preferredCuisine,
-                spiceLevel,
-                allergies,
-                dailyCalories,
-                updatedAt: new Date(),
-            }
-        }).returning();
+        const [savedPreferences] = await db
+            .insert(userPreferencesTable)
+            .values({
+                userId,
+                dietaryRestrictions: dietary_restrictions,
+                preferredCuisines: preferred_cuisines,
+                defaultServings: default_servings ? Number(default_servings) : undefined,
+                spiceLevel: spice_level,
+                dailyCalories: daily_calories ? Number(daily_calories) : undefined,
+            })
+            .onConflictDoUpdate({
+                target: userPreferencesTable.userId,
+                set: {
+                    dietaryRestrictions: dietary_restrictions,
+                    preferredCuisines: preferred_cuisines,
+                    defaultServings: default_servings ? Number(default_servings) : undefined,
+                    spiceLevel: spice_level,
+                    dailyCalories: daily_calories ? Number(daily_calories) : undefined,
+                    updatedAt: new Date(),
+                },
+            })
+            .returning()
 
         return res.status(200).json({
             status: "success",
