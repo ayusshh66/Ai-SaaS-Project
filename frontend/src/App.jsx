@@ -8,6 +8,7 @@ import Pantry from '../pages/Pantry'
 import RecipeGenerator from '../pages/RecipeGenerator'
 import { Toaster } from 'react-hot-toast';
 import MyRecipes from '../pages/MyRecipes'
+import RecipeDetail from '../pages/RecipeDetail'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path='/pantry' element={<Pantry/>}/>
           <Route path='/generate' element = {<RecipeGenerator/>}/>
           <Route path='/recipes' element = {<MyRecipes/>}/>
+          <Route path='/recipes/:id' element = {<RecipeDetail/>}/>
         </Routes>
     </BrowserRouter>
     <Toaster
