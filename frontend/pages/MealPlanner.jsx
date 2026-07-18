@@ -63,6 +63,20 @@ function MealPlanner() {
         }
     }    
 
+    const handleRemoveMeal = async(mealId) => {
+        try {
+
+            await api.delete(`/meal-plan/delete/${mealId}`);
+            await fetchMealPlan();
+            toast.success("Meal plan has been deleted");
+
+            
+        } catch (error) {
+            console.log("error in handling remove meal");
+            toast.error("failed to remove meal")
+        }
+    }
+
 
 
   return (
