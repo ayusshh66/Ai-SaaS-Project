@@ -180,6 +180,32 @@ recipeRouter.post('/recipe', authentication, async (req, res) => {
     }
 });
 
+recipeRouter.get("/all-recipe",authentication, async(req,res) => {
+
+    try {
+
+        const userId = req.user.id;
+
+        const info = await db.query.recipesTable.findMany({
+            where : (eq(recipesTable.userId, userId)),
+            with : {
+                ingredients : true,
+                nutrition : true,
+            },
+            orderBy : desc(recipesTable.id)
+        })
+
+        if(! info || info.length === 0){
+            return res.status(400).json({status: "success", data: info })
+        }
+
+        return res.status(200).json({status : "success", data : info})
+        
+    } catch (error) {
+        return res.status(500).json({error : "error in getting recipe", error})
+    }
+})
+
 recipeRouter.get("/", authentication, async (req, res) => {
     try {
         const userId = req.user.id;

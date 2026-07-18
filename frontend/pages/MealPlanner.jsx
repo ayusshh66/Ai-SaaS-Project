@@ -21,7 +21,7 @@ function MealPlanner() {
 
     useEffect(() => {
         fetchMealPlan();
-        
+
 
     }, [weekStart])
 
@@ -52,6 +52,10 @@ function MealPlanner() {
             setLoading(false)
         }
     }
+
+    
+
+
 
   return (
     <div>MealPlanner</div>
