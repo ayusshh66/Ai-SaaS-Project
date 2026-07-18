@@ -21,8 +21,7 @@ function MealPlanner() {
 
     useEffect(() => {
         fetchMealPlan();
-
-
+        fetchRecipes();
     }, [weekStart])
 
     const fetchMealPlan = async() => {
@@ -53,7 +52,16 @@ function MealPlanner() {
         }
     }
 
-    
+    const fetchRecipes = async() => {
+        try {
+
+            const response = await api.get("/recipes/all-recipe")
+            setRecipes(response.data.data)
+            
+        } catch (error) {
+            console.log("error in fetching recipes", error);
+        }
+    }    
 
 
 
