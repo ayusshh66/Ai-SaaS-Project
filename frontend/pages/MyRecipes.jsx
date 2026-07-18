@@ -41,7 +41,7 @@ function MyRecipes() {
     }
     },[searchQuery, recipes, selectedCuisine, selectedDifficulty])
 
-    const handleDelete = (id) => {
+    const handleDelete = async(id) => {
         if(!confirm("Are you sure you want to delete the recipe?")) return ;
 
         try {
@@ -52,6 +52,17 @@ function MyRecipes() {
             toast.error("failed to delete recipe")
         }
     }
+
+    if (loading) {
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <Navbar />
+            <div className="flex items-center justify-center h-96">
+                <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        </div>
+    );
+}
 
 
   return (
