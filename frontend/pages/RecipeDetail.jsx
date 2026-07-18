@@ -81,6 +81,17 @@ function RecipeDetail() {
         setCheckedIngredients(newChecked);
     };
 
+    const adjustQuantity = (originalQty, originalServings) => {
+        return ((originalQty * servings) / originalServings).toFixed(2);
+    };
+
+    if (!recipe) {
+        return null;
+    }
+
+    const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0);
+    const originalServings = recipe.servings || 4;
+
   return (
     <div>RecipeDetail</div>
   )
