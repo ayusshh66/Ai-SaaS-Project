@@ -257,6 +257,38 @@ const AddMealModal = ({ date, mealType, recipes, onClose, onSuccess }) => {
 
     const filteredRecipes = recipes.filter(recipe =>
         recipe.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );}
+    );
+
+    const handleSubmit = async(e) => {
+        e.preventDefault();
+        if(!selectedRecipe){
+            toast.error('please select a recipe')
+        }
+
+        setLoading(true);
+
+        try {
+
+            const response = await api.post("/meal-plans/create", {
+                recipeId : selectedRecipe,
+                mealDate : date,
+                mealType : mealType,
+            })
+
+            toast.success("Meal added  to plan");
+            onSuccess();
+            
+        } catch (error) {
+            console.log("error in creating meal plan");
+            toast.error("failed to add meal")
+        }finally{
+            setLoading(false)
+        }
+
+    }
+
+}
+
+
 
 export default MealPlanner
