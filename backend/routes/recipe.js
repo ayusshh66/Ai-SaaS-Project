@@ -235,6 +235,43 @@ recipeRouter.get("/", authentication, async (req, res) => {
     }
 });
 
+recipeRouter.get("/info/:id", authentication, async(req,res) => {
+
+    try {
+
+        const userId = req.user.id
+
+        const request = await idParamSchema.safeParseAsync(req.params.id);
+
+        if(request.error){
+            return res.status(400).json({error : "enter valid id"})
+        }
+
+        const {id} = request.data;
+
+        const info = await db.query.recipesTable.findFirst({
+            where : (and(eq(recipesTable.userId, userId), eq(recipesTable.id, id))),
+            orderBy: desc(recipesTable.createdAt), 
+            with : {
+                ingredients : true,
+                nutrition : true,
+            }
+
+        })
+
+        if (!info) {
+            return res.status(404).json({ error: "Recipe not found" });
+        }
+
+        return res.status(200).json({status : "success",
+            data : info
+        })
+        
+    } catch (error) {
+        return res.status(500).json({error : "Internal Server Error"})
+    }
+
+})
 
 recipeRouter.patch('/update/:id', authentication, async(req,res) =>{
     
