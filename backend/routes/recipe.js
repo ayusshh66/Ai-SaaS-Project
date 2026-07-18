@@ -398,7 +398,7 @@ recipeRouter.delete('/delete/:id', authentication, async(req,res) => {
             return res.status(404).json({error : `there is no recipe`})
         }
 
-        return res.status(200).json({status: "success", message: "successful!", data : {deleteRecipe}})
+        return res.status(200).json({status: "success", message: "successful!", data : deleteRecipe})
 
     } catch (error) {
         return res.status(500).json({error : `internal server error ${error}`})

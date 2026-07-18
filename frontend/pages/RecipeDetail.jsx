@@ -1,0 +1,54 @@
+import React from 'react'
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Clock, Users, ChefHat, ArrowLeft, Trash2, Calendar } from 'lucide-react';
+import Navbar from '../components/Navbar';
+import toast from 'react-hot-toast';
+import api from '../services/api';
+
+
+function RecipeDetail() {
+
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [recipe, setRecipe] = useState(null);
+    const [servings, setServings] = useState(4);
+    const [checkedIngredients, setCheckedIngredients] = useState(new Set());
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+
+        const fetchRecipe = async() =>{
+
+            setLoading(true)
+        try {
+
+            const url = `/recipes/info/${id}`
+            const response = await api.get(url);
+            const recipeData = response.data.data;
+
+            setRecipe(recipeData);
+            setServings(recipeData.servings || 4);
+
+            
+        } catch (error) {
+            console.log("error in fetching info of recipe", error);
+            toast.error("Failed to load recipes");
+            navigate("/recipes")
+        }finally{
+            setLoading(false)
+        }
+
+        }
+        fetchRecipe();
+
+    },[id])
+
+    
+
+  return (
+    <div>RecipeDetail</div>
+  )
+}
+
+export default RecipeDetail

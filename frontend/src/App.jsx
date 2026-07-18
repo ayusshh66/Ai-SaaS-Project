@@ -7,6 +7,7 @@ import Dashboard from '../pages/Dashboard'
 import Pantry from '../pages/Pantry'
 import RecipeGenerator from '../pages/RecipeGenerator'
 import { Toaster } from 'react-hot-toast';
+import MyRecipes from '../pages/MyRecipes'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path='/dashboard' element={<Dashboard/>}/>
           <Route path='/pantry' element={<Pantry/>}/>
           <Route path='/generate' element = {<RecipeGenerator/>}/>
+          <Route path='/recipes' element = {<MyRecipes/>}/>
         </Routes>
     </BrowserRouter>
     <Toaster
