@@ -71,6 +71,16 @@ function RecipeDetail() {
         );
     }
 
+    const toggleIngredient = (index) => {
+        const newChecked = new Set(checkedIngredients);
+        if (newChecked.has(index)) {
+            newChecked.delete(index);
+        } else {
+            newChecked.add(index);
+        }
+        setCheckedIngredients(newChecked);
+    };
+
   return (
     <div>RecipeDetail</div>
   )
