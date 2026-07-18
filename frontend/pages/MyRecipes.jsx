@@ -41,6 +41,18 @@ function MyRecipes() {
     }
     },[searchQuery, recipes, selectedCuisine, selectedDifficulty])
 
+    const handleDelete = (id) => {
+        if(!confirm("Are you sure you want to delete the recipe?")) return ;
+
+        try {
+            await api.delete(`/recipes/delete/${id}`)
+            setRecipes(recipes.filter(recipe => recipe.id !== id));
+            toast.success("Recipe has been deleted")
+        } catch (error) {
+            toast.error("failed to delete recipe")
+        }
+    }
+
 
   return (
     <>
