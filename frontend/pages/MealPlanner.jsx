@@ -77,7 +77,15 @@ function MealPlanner() {
         }
     }
 
+    const getDayMeals = (dayIndex) => {
+        const date = format(addDays(weekStart, dayIndex), 'yyyy-MM-dd');
+        return mealPlan[date] || {};
+    };
 
+    const handleAddMeal = (date, mealType) => {
+        setSelectedSlot({ date, mealType });
+        setShowAddModal(true);
+    };
 
   return (
     <div>MealPlanner</div>
