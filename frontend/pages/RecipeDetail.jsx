@@ -44,7 +44,21 @@ function RecipeDetail() {
 
     },[id])
 
-    
+    const handleDelete = async() => {
+        if(!confirm("Are you sure you want to delete the recipe")) return ;
+
+        try {
+
+            await api.delete(`/recipes/${id}`);
+            toast.success("Recipe has been deleted")
+            navigate("/recipes")
+            
+        } catch (error) {
+            console.log("error in deleting recipe", error);
+            toast.error("failed to delete recipe")   
+        }
+
+    }
 
   return (
     <div>RecipeDetail</div>
