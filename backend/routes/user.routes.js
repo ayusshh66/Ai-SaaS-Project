@@ -54,6 +54,36 @@ router.post('/signup', async(req,res) => {
     }
 })
 
+router.put("/change-password", authentication, async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    try {
+        const user = await db.query.usersTable.findFirst({
+            where: eq(usersTable.id, userId)
+        });
+
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        //  Verify current password
+        const currentHashed = createHmac("sha256", user.salt).update(currentPassword).digest("hex");
+        if (currentHashed !== user.password) {
+            return res.status(400).json({ message: "Current password incorrect" });
+        }
+
+        //  Hash new password
+        const newHashed = createHmac("sha256", user.salt).update(newPassword).digest("hex");
+
+        await db.update(usersTable)
+            .set({ password: newHashed })
+            .where(eq(usersTable.id, userId));
+
+        return res.status(200).json({ message: "Password changed successfully" });
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to change password" });
+    }
+});
+
 router.get("/profile", authentication, async (req, res) => {
     try {
         const userId = req.user.id;

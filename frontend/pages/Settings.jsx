@@ -81,10 +81,7 @@ function Settings() {
     } finally {
         setSaving(false);
     }
-};
-
-
-
+    };
 
   return (
     <div>Settings</div>
