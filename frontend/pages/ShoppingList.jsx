@@ -37,6 +37,17 @@ const ShoppingList = () => {
         }
     };
 
+       const handleDeleteItem = async (id) => {
+        if (!confirm('Remove this item?')) return;
+        try {
+            await api.delete(`/shopping-list/delete/${id}`);
+            loadShoppingList();
+            toast.success('Item removed');
+        } catch (error) {
+            toast.error('Failed to remove item');
+        }
+    };
 }
+
 
 export default ShoppingList;
