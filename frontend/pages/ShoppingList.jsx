@@ -31,8 +31,6 @@ function ShoppingList() {
         }
 
         fetchShoppingList();
-
-
     },[])
 
 

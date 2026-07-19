@@ -283,4 +283,41 @@ shoppingListRouter.get('/grouped', authentication, async(req,res) => {
 
 })
 
+shoppingListRouter.post("move-to-pantry", authentication, async(req,res) => {
+
+    try {
+
+        const userId = req.user.id;
+
+        const items = await db.select().from(shoppingListItemsTable).where(and(eq(shoppingListItemsTable.userId, userId), eq(shoppingListItemsTable.isChecked, true)))
+
+        if (checkedItems.length === 0) {
+            return res.status(400).json({ error: "No checked items to move" });
+        }
+
+        await db.transaction(async(tx) => {
+
+            //inserting the shopping list items to pantry data table
+            await tx.insert(pantryItemsTable).values(items.map(item => ({
+                userId : userId,
+                ingredientName: item.ingredientName,
+                quantity: item.quantity,
+                unit: item.unit
+            })))
+
+            //now deleting the items from shopping list table cuz now they are in pantry table
+
+            await tx.delete(shoppingListItemsTable).where(and(eq(shoppingListItemsTable.userId, userId), eq(shoppingListItemsTable.isChecked, true)))
+
+        })  
+
+        return res.status(200).json({ status: "success", message: "Items moved to pantry" });   
+
+        
+    } catch (error) {
+        return res.status(500).json({error : "internal server error ", error})
+    }
+
+})
+
 export default shoppingListRouter;
