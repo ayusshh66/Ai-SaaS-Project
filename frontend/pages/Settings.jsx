@@ -124,6 +124,24 @@ function Settings() {
         navigate("/login")
     }
 
+    const toggleDietary = (option) => {
+        setPreferences(prev => ({
+            ...prev,
+            dietary_restrictions: prev.dietary_restrictions.includes(option)
+                ? prev.dietary_restrictions.filter(d => d !== option)
+                : [...prev.dietary_restrictions, option]
+        }));
+    };
+
+    const toggleCuisine = (cuisine) => {
+        setPreferences(prev => ({
+            ...prev,
+            preferred_cuisines: prev.preferred_cuisines.includes(cuisine)
+                ? prev.preferred_cuisines.filter(c => c !== cuisine)
+                : [...prev.preferred_cuisines, cuisine]
+        }));
+    };
+
     
 
   return (
