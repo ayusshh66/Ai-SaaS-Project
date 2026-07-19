@@ -254,7 +254,7 @@ shoppingListRouter.get('/grouped', authentication, async(req,res) => {
             }
 
             // Push the clean item properties into its matching category bucket
-            groupedObject[cat].pus({
+            groupedObject[cat].push({
                 id: items.id,
                 ingredient_name: items.ingredientName,
                 quantity: items.quantity,
