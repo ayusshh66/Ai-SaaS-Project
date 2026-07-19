@@ -83,6 +83,34 @@ function Settings() {
     }
     };
 
+    const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+        toast.error('Passwords do not match');
+        return;
+    }
+    if (passwordData.newPassword.length < 6) {
+        toast.error('Password must be at least 6 characters');
+        return;
+    }
+
+    setSaving(true);
+    try {
+        await api.put('/users/change-password', {
+            currentPassword: passwordData.currentPassword,
+            newPassword: passwordData.newPassword
+        });
+        toast.success('Password changed successfully');
+        // i dont want to store their password in frontend
+        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error) {
+        toast.error('Failed to change password');
+    } finally {
+        setSaving(false);
+    }
+};
+
   return (
     <div>Settings</div>
   )
