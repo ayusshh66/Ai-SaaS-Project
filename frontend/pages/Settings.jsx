@@ -63,20 +63,25 @@ function Settings() {
         }
     }
 
-    const handleProfileUpdate = async(e) => {
-        e.preventDefault();
-        setSaving(true);
+    const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    
+    try {
+        // Create an object containing ONLY the changed fields
+        const updates = {};
+        if (changedUserName) updates.userName = changedUserName;
+        if (changedPreferences) updates.preferences = changedPreferences;
 
-        try {
-
-            const response = await api.patch("/users")
-            
-        } catch (error) {
-            toast.error("failed to update  user profile")
-        }finally{
-            setSaving(false);
-        }
+        await api.patch('/users/update', updates);
+        
+        toast.success('Profile updated successfully');
+    } catch (error) {
+        toast.error('Failed to update profile');
+    } finally {
+        setSaving(false);
     }
+};
 
 
 
