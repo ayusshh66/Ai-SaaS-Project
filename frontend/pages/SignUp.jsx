@@ -39,7 +39,7 @@ const SignUp = () => {
                         <ChefHat className="w-9 h-9 text-white" />
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900">Create Account</h1>
-                    <p className="text-gray-600 mt-2">Start your culinary journey with AI Recipe Generator</p>
+                    <p className="text-gray-600 mt-2">Start your journey with eMOM</p>
                 </div>
 
                 {/* Sign Up Form */}

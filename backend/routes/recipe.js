@@ -267,7 +267,7 @@ recipeRouter.get("/info/:id", authentication, async(req,res) => {
 
         const userId = req.user.id
 
-        const request = await idParamSchema.safeParseAsync(req.params.id);
+        const request = await idParamSchema.safeParseAsync(req.params);
 
         if(request.error){
             return res.status(400).json({error : "enter valid id"})

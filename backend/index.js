@@ -17,6 +17,10 @@ app.get('/', (req,res) => {
     return res.status(200).send(`server is readyyyy`)
 })
 
+app.get('/api/test', (req, res) => {
+    res.json({ message: "Backend is connected and working!" });
+});
+
 app.use('/api/meal-plans',mealPlanRouter)
 app.use('/api/recipes', recipeRouter)
 app.use('/api/users', userRouter);

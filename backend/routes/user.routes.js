@@ -88,6 +88,7 @@ router.get("/profile", authentication, async (req, res) => {
     try {
         const userId = req.user.id;
 
+        // 1. Fetch user with preferences
         const profile = await db.query.usersTable.findFirst({
             where: eq(usersTable.id, userId),
             with: {
@@ -96,21 +97,31 @@ router.get("/profile", authentication, async (req, res) => {
         });
 
         if (!profile) {
-            return res.status(400).json({ error: "No profile found" });
+            return res.status(404).json({ error: "No profile found" });
         }
 
+        // 2. Safely construct the name and preferences object
         return res.status(200).json({ 
             status: "success", 
             data: {
                 user: {
-                    name: profile.name,
+                    // Use firstName and lastName from your schema
+                    name: `${profile.firstName} ${profile.lastName || ''}`.trim(),
                     email: profile.email
                 },
-                preferences: profile.preferences
+                // If preferences is undefined, return an empty object instead of crashing
+                preferences: profile.preferences || {
+                    dietaryRestrictions: [],
+                    preferredCuisines: [],
+                    defaultServings: 2,
+                    spiceLevel: 'medium',
+                    dailyCalories: 0
+                }
             }
         });
         
     } catch (error) {
+        console.error("Profile Error:", error); // Check your terminal for this!
         return res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 });

@@ -152,10 +152,9 @@ const AddItemModal = ({ onClose, onSuccess }) => {
         e.preventDefault();
         setLoading(true);
         try {
-            await api.post('/shopping-list/create', {
-                ...formData,
-                quantity: parseFloat(formData.quantity)
-            });
+            const payload = { ...formData, quantity: formData.quantity.toString() };
+            console.log("Sending payload:", payload);
+            await api.post('/shopping-list/create',payload);
             toast.success('Item added to shopping list');
             onSuccess();
         } catch (error) {

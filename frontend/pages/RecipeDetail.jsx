@@ -16,6 +16,7 @@ function RecipeDetail() {
     useEffect(() => {
         const fetchRecipe = async () => {
             setLoading(true);
+            console.log("Fetching recipe with ID:", id); 
             try {
                 const url = `/recipes/info/${id}`;
                 const response = await api.get(url);
@@ -37,7 +38,7 @@ function RecipeDetail() {
     const handleDelete = async () => {
         if (!confirm("Are you sure you want to delete the recipe?")) return;
         try {
-            await api.delete(`/recipes/${id}`);
+            await api.delete(`/recipes/delete/${id}`);
             toast.success("Recipe has been deleted");
             navigate("/recipes");
         } catch (error) {
@@ -73,7 +74,7 @@ function RecipeDetail() {
 
     if (!recipe) return null;
 
-    const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0);
+    const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
     const originalServings = recipe.servings || 4;
 
     return (

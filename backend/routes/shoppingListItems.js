@@ -3,7 +3,7 @@ import { authentication } from '../middleware/auth.js';
 import { createItemSchema, generateListSchema, idParamSchema, updateItemSchema } from '../validators/signupValidation.js';
 import db from '../src/index.js';
 import { mealPlansTable, pantryItemsTable, recipeIngredientsTable, shoppingListItemsTable } from '../models/user.model.js';
-import { asc } from 'drizzle-orm';
+import { asc,eq, and, or,desc } from 'drizzle-orm';
 
 const shoppingListRouter = express.Router();
 
@@ -109,7 +109,7 @@ shoppingListRouter.post('/create', authentication, async(req,res) => {
 
         const {ingredient_name, quantity, unit, category} = validation.data;
 
-        const [shoppingListItems] = await db.insert(shoppingListItemsTable).values({
+        const [newItem] = await db.insert(shoppingListItemsTable).values({
                 userId,
                 ingredientName: ingredient_name,
                 quantity,
@@ -150,6 +150,7 @@ shoppingListRouter.get("/", authentication, async (req, res) => {
         });
 
     } catch (error) {
+
         console.error("Error fetching shopping list:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
@@ -185,48 +186,44 @@ shoppingListRouter.delete('/delete/:id', authentication, async(req,res) => {
     }
 })
 
-shoppingListRouter.patch("/update/:id", authentication, async(req,res) => {
-
+shoppingListRouter.patch("/update/:id", authentication, async (req, res) => {
     try {
+        const userId = req.user.id;
         
-    const userId = req.user.id;
+        // 1. Validate ID
+        const idValidation = await idParamSchema.safeParseAsync(req.params);
+        if (idValidation.error) return res.status(400).json({ error: idValidation.error.format() });
+        const itemId = idValidation.data.id;
 
-    const request = await idParamSchema.safeParseAsync(req.params);
+        // 2. Validate Body
+        const validation = await updateItemSchema.safeParseAsync(req.body);
+        if (validation.error) return res.status(400).json({ error: validation.error.format() });
 
-    if(request.error){
-        return res.status(400).json({error : request.error.format()})
-    }
+        const { ingredient_name, quantity, unit, category, is_checked } = validation.data;
 
-    const itemId = request.data;
+        // 3. Create a clean update object with ONLY the provided fields
+        const updateFields = {};
+        if (ingredient_name) updateFields.ingredientName = ingredient_name;
+        if (quantity) updateFields.quantity = quantity;
+        if (unit) updateFields.unit = unit;
+        if (category) updateFields.category = category;
+        if (is_checked !== undefined) updateFields.isChecked = is_checked;
+        updateFields.updatedAt = new Date();
 
-    const validation = await updateItemSchema.safeParseAsync(req.body);
+        // 4. Perform the update
+        const [updatedItem] = await db.update(shoppingListItemsTable)
+            .set(updateFields)
+            .where(and(eq(shoppingListItemsTable.id, itemId), eq(shoppingListItemsTable.userId, userId)))
+            .returning();
 
-    if(validation.error){
-        return res.status(400).json({error : validation.error.format()})
-    }
+        if (!updatedItem) return res.status(404).json({ error: "Item not found" });
 
-    const {ingredient_name, quantity, unit, category, is_checked} = validation.data;
-
-    const [updateItem] = await db.update(shoppingListItemsTable).set({
-        ingredientName : ingredient_name,
-        unit,
-        quantity,
-        category,
-        isChecked : is_checked,
-        updatedAt : new Date(),
-    }).where(and(eq(shoppingListItemsTable.id, itemId), eq(shoppingListItemsTable.userId, userId))).returning()
-
-    return res.status(200).json({
-        status : "success",
-        message : "updated successfully",
-        updated_items : updateItem,
-    })
-
+        return res.status(200).json({ status: "success", updated_items: updatedItem });
     } catch (error) {
-        return res.status(500).json({error : "Inernal Server Error"})
+        console.error("Patch Error:", error); // Check your terminal for the real error!
+        return res.status(500).json({ error: "Internal Server Error" });
     }
-
-})
+});
 
 shoppingListRouter.get('/grouped', authentication, async(req,res) => {
 
@@ -276,6 +273,7 @@ shoppingListRouter.get('/grouped', authentication, async(req,res) => {
         });
 
     } catch (error) {
+        console.error("Backend /grouped error:", error);
         return res.status(400).json({
             error : "Internal Server Error"
         })
@@ -283,41 +281,35 @@ shoppingListRouter.get('/grouped', authentication, async(req,res) => {
 
 })
 
-shoppingListRouter.post("move-to-pantry", authentication, async(req,res) => {
-
+shoppingListRouter.post("/move-to-pantry", authentication, async(req, res) => {
     try {
-
         const userId = req.user.id;
+        const items = await db.select().from(shoppingListItemsTable)
+            .where(and(eq(shoppingListItemsTable.userId, userId), eq(shoppingListItemsTable.isChecked, true)));
 
-        const items = await db.select().from(shoppingListItemsTable).where(and(eq(shoppingListItemsTable.userId, userId), eq(shoppingListItemsTable.isChecked, true)))
-
-        if (checkedItems.length === 0) {
+        if (items.length === 0) {
             return res.status(400).json({ error: "No checked items to move" });
         }
 
         await db.transaction(async(tx) => {
-
-            //inserting the shopping list items to pantry data table
             await tx.insert(pantryItemsTable).values(items.map(item => ({
-                userId : userId,
-                ingredientName: item.ingredientName,
+                userId: userId,
+                name: item.ingredientName, // Ensure this matches your pantry model!
                 quantity: item.quantity,
-                unit: item.unit
-            })))
+                unit: item.unit,
+                category: item.category || "Uncategorized", // Try adding defaults
+                is_running_low: false // Ensure this matches your model
+            })));
 
-            //now deleting the items from shopping list table cuz now they are in pantry table
+            await tx.delete(shoppingListItemsTable)
+                .where(and(eq(shoppingListItemsTable.userId, userId), eq(shoppingListItemsTable.isChecked, true)));
+        }); 
 
-            await tx.delete(shoppingListItemsTable).where(and(eq(shoppingListItemsTable.userId, userId), eq(shoppingListItemsTable.isChecked, true)))
-
-        })  
-
-        return res.status(200).json({ status: "success", message: "Items moved to pantry" });   
-
-        
+        return res.status(200).json({ status: "success", message: "Items moved to pantry" }); 
     } catch (error) {
-        return res.status(500).json({error : "internal server error ", error})
+        console.error("DEBUG - Move to Pantry Error:", error); // <-- Check this log!
+        return res.status(500).json({ error: "Internal server error", details: error.message });
     }
-
-})
+});
 
 export default shoppingListRouter;
