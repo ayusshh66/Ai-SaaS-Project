@@ -10,6 +10,7 @@ import { Toaster } from 'react-hot-toast';
 import MyRecipes from '../pages/MyRecipes'
 import RecipeDetail from '../pages/RecipeDetail'
 import MealPlanner from '../pages/MealPlanner'
+import ShoppingList from '../pages/ShoppingList'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path='/recipes' element = {<MyRecipes/>}/>
           <Route path='/recipes/:id' element = {<RecipeDetail/>}/>
           <Route path='/meal-plan' element = {<MealPlanner/>}/>
+          <Route path='/shopping-list' element={<ShoppingList/>}/>
         </Routes>
     </BrowserRouter>
     <Toaster
