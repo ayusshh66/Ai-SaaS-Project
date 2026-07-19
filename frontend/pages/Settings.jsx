@@ -15,9 +15,21 @@ function Settings() {
     const navigate = useNavigate();
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true)
+    const [ profile, setProfile] = useState({
+        name : "",
+        email : "",
+    });
+    const [preferences, setPreferences] = useState({
+    dietary_restrictions: [],
+    preferred_cuisines: [],
+    default_servings: 2, 
+    spice_level: 'medium',
+    measurement_unit: 'metric',
+    dailyCalories : 0,
+    });
 
     useEffect(() => {
-
+        fetchUserData();
     }, [])
 
     const fetchUserData = () => {
@@ -25,12 +37,33 @@ function Settings() {
 
         try {
 
-            
+            const response = await api.get("/users/profile");
+            const {user, preferences : userPref} = response.data.data;
+
+            setProfile({
+                name : user.name,
+                email : user.email,
+            })
+
+            if(userPref){
+                setPreferences({
+                    dietary_restrictions: userPref.dietaryRestrictions || [],
+                    preferred_cuisines: userPref.preferredCuisines|| [],
+                    default_servings: userPref.defaultServings|| 2, 
+                    spice_level:userPref.spiceLevel || 'medium',
+                    measurement_unit: 'metric',
+                    dailyCalories : userPref.dailyCalories || 0
+                })
+            }
             
         } catch (error) {
             toast.error("failed to load user data")
+        }finally{
+            setLoading(false)
         }
     }
+
+    
 
 
   return (
