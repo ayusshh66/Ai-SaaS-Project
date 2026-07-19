@@ -109,7 +109,22 @@ function Settings() {
     } finally {
         setSaving(false);
     }
-};
+    };
+
+    const handleDeleteAccount = async() => {
+        if(!confirm("Are you sure you want to delete the account forever?")) return;
+
+        const confirmation = prompt(`type "DELETE" to confirm account deletion`);
+        if(confirmation !== "DELETE"){
+            toast.error("Account deletion cancelled ")
+        }
+
+        toast.success("Account has been deleted");
+        logout();
+        navigate("/login")
+    }
+
+    
 
   return (
     <div>Settings</div>
