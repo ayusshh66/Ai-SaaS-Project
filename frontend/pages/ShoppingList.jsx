@@ -124,7 +124,7 @@ const ShoppingList = () => {
                                     ))}
                                 </div>
                             </div>
-                        ))}
+                        ))} 
                     </div>
                 )}
             </div>
@@ -139,6 +139,61 @@ const ShoppingList = () => {
     );
 };
 
+const AddItemModal = ({ onClose, onSuccess }) => {
+    const [formData, setFormData] = useState({
+        ingredient_name: '',
+        quantity: '',
+        unit: 'pieces',
+        category: 'Other'
+    });
+    const [loading, setLoading] = useState(false);
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            await api.post('/shopping-list/create', {
+                ...formData,
+                quantity: parseFloat(formData.quantity)
+            });
+            toast.success('Item added to shopping list');
+            onSuccess();
+        } catch (error) {
+            toast.error('Failed to add item');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold text-gray-900">Add New Item</h2>
+                    <button onClick={onClose}><X className="text-gray-400 hover:text-orange-600" /></button>
+                </div>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <input 
+                        className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" 
+                        placeholder="Item Name" 
+                        required 
+                        onChange={e => setFormData({...formData, ingredient_name: e.target.value})} 
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                        <input type="number" className="p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" placeholder="Qty" required onChange={e => setFormData({...formData, quantity: e.target.value})} />
+                        <select className="p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" onChange={e => setFormData({...formData, unit: e.target.value})}>
+                            <option value="pieces">Pieces</option>
+                            <option value="kg">kg</option>
+                            <option value="l">Liters</option>
+                        </select>
+                    </div>
+                    <button type="submit" disabled={loading} className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold transition-all">
+                        {loading ? 'Adding...' : 'Add to List'}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
 
 export default ShoppingList;
