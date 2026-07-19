@@ -129,50 +129,5 @@ function MealPlanner() {
     );
 }
 
-const AddMealModal = ({ date, mealType, recipes, onClose, onSuccess }) => {
-    const [selectedRecipe, setSelectedRecipe] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-
-    const filteredRecipes = recipes.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!selectedRecipe) return toast.error('Select a recipe');
-        setLoading(true);
-        try {
-            await api.post("/meal-plans/create", { recipeId: selectedRecipe, mealDate: date, mealType });
-            toast.success("Meal added");
-            onSuccess();
-        } catch (error) {
-            toast.error("Failed to add");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl max-w-md w-full p-6">
-                <h2 className="text-xl font-bold mb-4">Add Meal</h2>
-                <input className="w-full p-2 border rounded-lg mb-4" placeholder="Search..." onChange={(e) => setSearchQuery(e.target.value)} />
-                <form onSubmit={handleSubmit} className="space-y-2">
-                    <div className="max-h-60 overflow-y-auto">
-                        {filteredRecipes.map(r => (
-                            <label key={r.id} className={`block p-3 border rounded-lg cursor-pointer ${selectedRecipe == r.id ? 'bg-orange-50 border-orange-500' : ''}`}>
-                                <input type="radio" className="mr-2" name="recipe" value={r.id} onChange={(e) => setSelectedRecipe(e.target.value)} />
-                                {r.name}
-                            </label>
-                        ))}
-                    </div>
-                    <div className="flex gap-2 pt-4">
-                        <button type="button" onClick={onClose} className="flex-1 p-2 border rounded-lg">Cancel</button>
-                        <button type="submit" disabled={loading} className="flex-1 p-2 bg-orange-500 text-white rounded-lg">Add</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    );
-};
 
 export default MealPlanner;
