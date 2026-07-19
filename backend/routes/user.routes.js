@@ -54,7 +54,36 @@ router.post('/signup', async(req,res) => {
     }
 })
 
+router.get("/profile", authentication, async (req, res) => {
+    try {
+        const userId = req.user.id;
 
+        const profile = await db.query.usersTable.findFirst({
+            where: eq(usersTable.id, userId),
+            with: {
+                preferences: true,
+            }
+        });
+
+        if (!profile) {
+            return res.status(400).json({ error: "No profile found" });
+        }
+
+        return res.status(200).json({ 
+            status: "success", 
+            data: {
+                user: {
+                    name: profile.name,
+                    email: profile.email
+                },
+                preferences: profile.preferences
+            }
+        });
+        
+    } catch (error) {
+        return res.status(500).json({ error: "Internal Server Error", details: error.message });
+    }
+});
 
 router.post('/login', async(req,res) => {
     try {
