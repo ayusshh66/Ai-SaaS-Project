@@ -63,7 +63,22 @@ function Settings() {
         }
     }
 
-    
+    const handleProfileUpdate = async(e) => {
+        e.preventDefault();
+        setSaving(true);
+
+        try {
+
+            const response = await api.patch("/users")
+            
+        } catch (error) {
+            toast.error("failed to update  user profile")
+        }finally{
+            setSaving(false);
+        }
+    }
+
+
 
 
   return (
