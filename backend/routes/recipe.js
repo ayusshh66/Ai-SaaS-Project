@@ -218,18 +218,9 @@ recipeRouter.get("/", authentication, async (req, res) => {
         const conditions = [eq(recipesTable.userId, userId)];
 
         if (search) conditions.push(ilike(recipesTable.name, `%${search}%`));
-
         if (cuisine) conditions.push(eq(recipesTable.cuisine, cuisine));
-
         if (difficulty) conditions.push(eq(recipesTable.difficulty, difficulty));
-
         if (max_prep_time) conditions.push(lte(recipesTable.prepTime, Number(max_prep_time)));
-
-        if (max_calories) conditions.push(lte(recipeNutritionTable.calories, Number(max_calories)));
-
-        if (min_protein) conditions.push(gte(recipeNutritionTable.protein, Number(min_protein)));
-
-        if (max_fats) conditions.push(lte(recipeNutritionTable.fats, Number(max_fats)));
 
         const queryLimit = limit ? Number(limit) : 20;
         const queryOffset = offset ? Number(offset) : 0;
@@ -238,21 +229,34 @@ recipeRouter.get("/", authentication, async (req, res) => {
         const sortColumn = validSortColumns[sort_by] || recipesTable.createdAt;
         const finalOrder = sort_order === 'asc' ? sortColumn : desc(sortColumn);
 
-        const results = await db.query.recipesTable.findMany({
+        let results = await db.query.recipesTable.findMany({
             where: and(...conditions), 
             orderBy: finalOrder,
-            limit: queryLimit,
-            offset: queryOffset,
             with: {
                 ingredients: true,
                 nutrition: true
             }
         });
 
+        if (max_calories || min_protein || max_fats) {
+            results = results.filter(recipe => {
+                const nut = recipe.nutrition;
+                if (!nut) return false; // Skip if no nutrition data exists
+
+                if (max_calories && Number(nut.calories) > Number(max_calories)) return false;
+                if (min_protein && Number(nut.protein) < Number(min_protein)) return false;
+                if (max_fats && Number(nut.fats) > Number(max_fats)) return false;
+
+                return true;
+            });
+        }
+
+        const paginatedResults = results.slice(queryOffset, queryOffset + queryLimit);
+
         return res.status(200).json({
             status: "success",
-            count: results.length,
-            data: results,
+            count: paginatedResults.length,
+            data: paginatedResults,
         });
 
     } catch (error) {
