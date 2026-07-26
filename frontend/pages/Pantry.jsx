@@ -97,7 +97,7 @@ return (
             <Navbar />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Header */}
+                 {/* //Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">Pantry</h1>
@@ -112,7 +112,7 @@ return (
                     </button>
                 </div>
 
-                {/* Expiring Soon Alert */}
+                {/* //Expiring Soon Alert */}
                 {expiringItems.length > 0 && (
                     <div className=" selection:bg-orange-300 bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
                         <div className="flex items-start gap-3">
@@ -127,7 +127,7 @@ return (
                     </div>
                 )}
 
-                {/* Search and Filter */}
+                {/* // Search and Filter  */}
                 <div className="selection:bg-orange-300 bg-white rounded-lg border border-gray-200 p-4 mb-6">
                     <div className="flex flex-col sm:flex-row gap-4">
                         {/* Search */}
@@ -142,7 +142,7 @@ return (
                             />
                         </div>
 
-                        {/* Category Filter */}
+                        {/* // Category Filter */}
                         <div className="selection:bg-orange-300 flex gap-2 overflow-x-auto pb-2 sm:pb-0">
                             <CategoryButton
                                 label="All"
@@ -161,7 +161,7 @@ return (
                     </div>
                 </div>
 
-                {/* Items Grid */}
+                {/* // Items Grid  */}
                 {filteredItems.length > 0 ? (
                     <div className=" selection:bg-orange-300 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filteredItems.map(item => (
@@ -180,7 +180,7 @@ return (
                 )}
             </div>
 
-            {/* Add Item Modal */}
+            {/* // Add Item Modal */}
             {showAddModal && (
                 <AddItemModal
                     onClose={() => setShowAddModal(false)}
@@ -363,7 +363,7 @@ const PantryItemCard = ({ item, onDelete, isExpiring }) => {
                         <input
                             type="date"
                             value={formData.expiry_date}
-                            onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
+                            onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value? e.target.value : 0 })}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                         />
                     </div>

@@ -27,7 +27,7 @@ pantryRouter.post('/create', authentication,async(req,res) => {
             quantity,
             unit,
             category,
-            expiryDate : expiry_date,
+            expiryDate : expiry_date && expiry_date.trim() !== "" ? expiry_date : null,
             isRunningLow : is_running_low,
         }).returning();
 

@@ -1,4 +1,4 @@
-import { boolean, email, z, uuid, int, nonnegative, optional, regex } from "zod";
+import { boolean, email, z, uuid, int, nonnegative, optional, regex, nullable, number } from "zod";
 
 export const signUpValidation =  z.object({
     firstName : z.string(),
@@ -23,11 +23,11 @@ export const idValidation =  z.object({
 
 export const pantryItemValidation = z.object({
     name : z.string(),
-    quantity : z.number(),
+    quantity : z.number().or(z.number()),
     unit : z.string(),
     category : z.string(),
-    expiry_date : z.string(),
-    is_running_low : boolean(),
+    expiry_date : z.string().optional().nullable(),
+    is_running_low : boolean().optional(),
 })
 
 export const idPantryValidation = z.object({

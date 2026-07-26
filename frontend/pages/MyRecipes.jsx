@@ -120,7 +120,7 @@ const MyRecipes = () => {
 };
 
 const RecipeCard = ({ recipe, onDelete }) => {
-    const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0);
+    const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
 
     return (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all group">

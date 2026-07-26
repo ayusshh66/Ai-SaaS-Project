@@ -1,4 +1,4 @@
-import { pgTable, varchar, text, timestamp, uuid, integer, numeric, boolean, jsonb, date, unique } from "drizzle-orm/pg-core";
+import { pgTable, varchar, text, timestamp, uuid, integer, numeric, boolean, jsonb, date, unique, real } from "drizzle-orm/pg-core";
 import { relations } from 'drizzle-orm';
 import { userPreferencesTable } from "./user.preferences.model.js";
 
@@ -28,7 +28,7 @@ export const pantryItemsTable = pgTable('pantry_items', {
   unit: text('unit').notNull(),
   category: text('category'),
   expiryDate: text('expiry_date'),
-  isRunningLow: boolean('is_running_low').default(false).notNull(),
+  isRunningLow: boolean('is_running_low').default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -51,11 +51,11 @@ export const recipesTable = pgTable('recipes', {
 export const recipeNutritionTable = pgTable('recipe_nutrition', {
   id: uuid('id').defaultRandom().primaryKey(),
   recipeId: uuid('recipe_id').references(() => recipesTable.id, { onDelete: 'cascade' }).notNull().unique(), // Unique constraint guarantees 1-to-1
-  calories: integer('calories'),
-  protein: integer('protein'), // in grams
-  carbs: integer('carbs'),     // in grams
-  fats: integer('fats'),       // in grams
-  fiber: integer('fiber'),     // in grams
+  calories: real('calories'),
+  protein: real('protein'), // in grams
+  carbs: real('carbs'),     // in grams
+  fats: real('fats'),       // in grams
+  fiber: real('fiber'),     // in grams
 });
 
 //recipe ingredients 
