@@ -168,7 +168,7 @@ shoppingListRouter.delete('/delete/:id', authentication, async(req,res) => {
             return res.status(500).json({error : validation.error.format()})
         }
 
-        const itemId = validation.data;
+        const itemId = validation.data.id;
 
         const [deleteItem]= await db.delete(shoppingListItemsTable).where(and(eq(shoppingListItemsTable.userId, userId), eq(shoppingListItemsTable.id, itemId))).returning()
 

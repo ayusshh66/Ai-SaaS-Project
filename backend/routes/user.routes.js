@@ -178,41 +178,24 @@ router.get("/me", authentication, async (req,res) => {
 
 router.delete("/delete", authentication, async (req, res) => {
   try {
-    const request = await idValidation.safeParseAsync(req.body);
-
-    if (request.error) {
-      return res.status(400).json({ error: request.error.format() });
-    }
-
-    const { id, password } = request.data;
+    const userId = req.user.id;
 
     const [notty] = await db
       .select({
-        salt: usersTable.salt,
-        password: usersTable.password,
-        userid: usersTable.id,
         userName: usersTable.userName, 
       })
       .from(usersTable)
-      .where(eq(usersTable.id, id));
+      .where(eq(usersTable.id, userId));
 
     if (!notty) {
       return res.status(404).json({ error: "User profile not found." });
     }
 
-    const salt = notty.salt;
-    const oldHashedPassword = notty.password;
-
-    const newHashedPassword = createHmac('sha256', salt).update(password).digest('hex');
-
-    if (oldHashedPassword !== newHashedPassword || id !== notty.userid) {
-      return res.status(400).json({ error: "you have entered incorrect id or password" });
-    }
-
-    await db.delete(usersTable).where(eq(usersTable.id, id))
+    await db.delete(usersTable).where(eq(usersTable.id, userId));
 
     return res.status(200).json({
-      message: `the account with username ${notty.userName} has been deleted at `,time: new Date(),
+      message: `The account with username ${notty.userName} has been deleted.`,
+      time: new Date(),
     });
 
   } catch (error) {
@@ -222,22 +205,29 @@ router.delete("/delete", authentication, async (req, res) => {
 
 router.patch("/update", authentication, async (req, res) => {
     const userId = req.user.id; 
-    
     const { userName, preferences } = req.body; 
 
     const updateFields = {};
     if (userName) updateFields.userName = userName;
     
-    // Only update if fields were actually provided
     if (Object.keys(updateFields).length > 0) {
         await db.update(usersTable)
             .set(updateFields)
             .where(eq(usersTable.id, userId));
     }
 
-        if (preferences) {
+    if (preferences) {
+        const mappedPreferences = {
+            dietaryRestrictions: preferences.dietary_restrictions,
+            preferredCuisines: preferences.preferred_cuisines,
+            defaultServings: preferences.default_servings ? Number(preferences.default_servings) : undefined,
+            spiceLevel: preferences.spice_level,
+            dailyCalories: preferences.dailyCalories ? Number(preferences.dailyCalories) : undefined,
+            updatedAt: new Date(),
+        };
+
         await db.update(userPreferencesTable)
-            .set(preferences)
+            .set(mappedPreferences)
             .where(eq(userPreferencesTable.userId, userId));
     }
 
