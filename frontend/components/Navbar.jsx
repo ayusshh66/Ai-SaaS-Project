@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { NavLink as RouterNavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ChefHat, Home, UtensilsCrossed, Calendar, ShoppingCart, Settings, LogOut } from 'lucide-react';
 
@@ -55,13 +55,19 @@ const Navbar = () => {
 
 const NavLink = ({ to, icon, label }) => {
     return (
-        <Link
+        <RouterNavLink
             to={to}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+            className={({ isActive }) =>
+                `flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    isActive
+                        ? 'text-orange-600 bg-orange-50'
+                        : 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
+                }`
+            }
         >
             {icon}
             <span>{label}</span>
-        </Link>
+        </RouterNavLink>
     );
 };
 

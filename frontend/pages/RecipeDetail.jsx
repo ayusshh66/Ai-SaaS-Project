@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Clock, Users, ChefHat, ArrowLeft, Trash2, Zap } from 'lucide-react';
+import { Clock, Users, ChefHat, ArrowLeft, Trash2, Zap, Video, ExternalLink } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
 import api from '../services/api';
@@ -94,6 +94,9 @@ function RecipeDetail() {
     const ingredientsList = recipe.ingredients || recipe.recipeIngredients || [];
     const nutritionInfo = recipe.nutrition || recipe.recipeNutrition || null;
     const cuisineValue = recipe.cuisine || recipe.cuisine_type;
+
+    // Automatically encode the recipe name into a YouTube search query URL
+    const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.name + " recipe")}`;
 
     return (
         <div className="min-h-screen bg-gray-50 pb-12">
@@ -197,6 +200,27 @@ function RecipeDetail() {
                                     </li>
                                 ))}
                             </ol>
+                        </div>
+
+                        {/* YouTube Search Link Section */}
+                        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 bg-red-50 text-red-600 rounded-xl">
+                                    <Video className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-900">Want to watch a video tutorial?</h2>
+                                    <p className="text-sm text-gray-500">Search for "{recipe.name}" instantly on YouTube.</p>
+                                </div>
+                            </div>
+                            <a
+                                href={youtubeSearchUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm shrink-0"
+                            >
+                                Search on YouTube <ExternalLink className="w-4 h-4" />
+                            </a>
                         </div>
                     </div>
                 </div>
