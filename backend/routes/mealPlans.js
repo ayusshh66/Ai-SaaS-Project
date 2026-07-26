@@ -171,21 +171,24 @@ mealPlanRouter.get('/upcoming', authentication, async(req,res) => {
 
 })
 
-mealPlanRouter.delete('/delete:id', authentication, async(req,res) =>{
-    
+mealPlanRouter.delete('/delete/:id', authentication, async (req, res) => {
     try {
-        
         const userId = req.user.id;
 
         const request = await idParamSchema.safeParseAsync(req.params);
 
-        if(request.error){
-            return res.status(400).json({error : request.error.format()})
+        if (request.error) {
+            return res.status(400).json({ error: request.error.format() });
         }
 
-        const mealPlanId = request.data;
+        const mealPlanId = request.data.id
 
-        const [deletedMeal] = await db.delete(mealPlansTable).where(and(eq(mealPlansTable.userId, userId) , eq(mealPlansTable.id, mealPlanId))).returning()
+        const [deletedMeal] = await db.delete(mealPlansTable).where(
+            and(
+                eq(mealPlansTable.userId, userId), 
+                eq(mealPlansTable.id, mealPlanId)
+            )
+        ).returning();
 
         if (!deletedMeal) {
             return res.status(404).json({ error: "Meal plan entry not found or unauthorized" });
@@ -198,10 +201,10 @@ mealPlanRouter.delete('/delete:id', authentication, async(req,res) =>{
         });
 
     } catch (error) {
-        return res.status(500).json({error : "Internal Server Error"})
+        console.error("Delete meal plan error:", error); // Added log to see exact error in your server terminal
+        return res.status(500).json({ error: "Internal Server Error" });
     }
-
-})
+});
 
 mealPlanRouter.get('/upcoming', authentication, async(req, res) => {
     try {

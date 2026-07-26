@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Plus, X, ChefHat } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, X, ChevronLeft, ChevronRight, Utensils } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
 import { format, startOfWeek, addDays } from 'date-fns';
@@ -37,7 +37,7 @@ function MealPlanner() {
             setMealPlan(organized);
         } catch (error) {
             console.error("error in fetching meal plan", error);
-            toast.error("failed to load meal plan");
+            toast.error("Failed to load meal plan");
         } finally {
             setLoading(false);
         }
@@ -53,14 +53,16 @@ function MealPlanner() {
     };
 
     const handleRemoveMeal = async (mealId) => {
-        if (!confirm("Are you sure you want to remove the meal?")) return;
+        if (!confirm("Are you sure you want to remove this meal?")) return;
         try {
+            
             await api.delete(`/meal-plans/delete/${mealId}`);
+            
             await fetchMealPlan();
             toast.success("Meal plan has been deleted");
         } catch (error) {
             console.error("error in removing meal", error);
-            toast.error("failed to remove meal");
+            toast.error("Failed to remove meal");
         }
     };
 
@@ -69,44 +71,92 @@ function MealPlanner() {
         return mealPlan[date] || {};
     };
 
+    const weekEnd = addDays(weekStart, 6);
+
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 pb-12">
             <Navbar />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="flex items-center justify-between mb-6">
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Meal Planner</h1>
-                        <p className="text-gray-600 mt-1">Plan your weekly meals</p>
+                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Meal Planner</h1>
+                        <p className="text-gray-500 mt-1 flex items-center gap-2">
+                            <CalendarIcon className="w-4 h-4 text-orange-500" />
+                            <span>{format(weekStart, 'MMM d, yyyy')} - {format(weekEnd, 'MMM d, yyyy')}</span>
+                        </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => setWeekStart(addDays(weekStart, -7))} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Previous</button>
-                        <button onClick={() => setWeekStart(startOfWeek(new Date()))} className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">This Week</button>
-                        <button onClick={() => setWeekStart(addDays(weekStart, 7))} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Next</button>
+                    <div className="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm">
+                        <button 
+                            onClick={() => setWeekStart(addDays(weekStart, -7))} 
+                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1 text-sm font-medium"
+                        >
+                            <ChevronLeft className="w-4 h-4" /> Previous
+                        </button>
+                        <button 
+                            onClick={() => setWeekStart(startOfWeek(new Date()))} 
+                            className="px-3 py-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-lg font-medium text-sm transition-colors"
+                        >
+                            This Week
+                        </button>
+                        <button 
+                            onClick={() => setWeekStart(addDays(weekStart, 7))} 
+                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1 text-sm font-medium"
+                        >
+                            Next <ChevronRight className="w-4 h-4" />
+                        </button>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <div className="grid grid-cols-8 border-b border-gray-200 bg-gray-50">
-                        <div className="p-4 font-semibold text-gray-700 border-r">Meal</div>
-                        {DAYS_OF_WEEK.map((day, i) => (
-                            <div key={day} className="p-4 text-center border-r">{day}<div className="text-xs text-gray-500">{format(addDays(weekStart, i), 'MMM d')}</div></div>
-                        ))}
+                {/* Calendar Grid Container */}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="grid grid-cols-8 border-b border-gray-200 bg-gray-50/70 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <div className="p-4 border-r border-gray-200 flex items-center gap-2">
+                            <Utensils className="w-4 h-4 text-orange-500" /> Meal
+                        </div>
+                        {DAYS_OF_WEEK.map((day, i) => {
+                            const currentDayDate = addDays(weekStart, i);
+                            const isToday = format(new Date(), 'yyyy-MM-dd') === format(currentDayDate, 'yyyy-MM-dd');
+                            return (
+                                <div key={day} className={`p-4 text-center border-r border-gray-200 last:border-r-0 ${isToday ? 'bg-orange-50/50 text-orange-600 font-bold' : ''}`}>
+                                    <div>{day}</div>
+                                    <div className={`text-sm mt-0.5 ${isToday ? 'text-orange-600 bg-orange-100 inline-block px-2 py-0.5 rounded-full' : 'text-gray-400 font-normal'}`}>
+                                        {format(currentDayDate, 'MMM d')}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
+
                     {MEAL_TYPES.map(mealType => (
-                        <div key={mealType} className="grid grid-cols-8 border-b">
-                            <div className="p-4 font-medium capitalize border-r bg-gray-50">{mealType}</div>
+                        <div key={mealType} className="grid grid-cols-8 border-b border-gray-200 last:border-b-0">
+                            <div className="p-4 font-semibold text-gray-700 capitalize border-r border-gray-200 bg-gray-50/30 flex items-center">
+                                {mealType}
+                            </div>
                             {DAYS_OF_WEEK.map((_, dayIndex) => {
                                 const date = format(addDays(weekStart, dayIndex), 'yyyy-MM-dd');
                                 const meal = getDayMeals(dayIndex)[mealType];
                                 return (
-                                    <div key={dayIndex} className="p-3 border-r min-h-[100px] hover:bg-gray-50">
+                                    <div key={dayIndex} className="p-2.5 border-r border-gray-200 last:border-r-0 min-h-[120px] bg-white hover:bg-gray-50/50 transition-colors relative flex flex-col justify-center">
                                         {meal ? (
-                                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-2 relative group">
-                                                <p className="text-sm font-medium text-orange-900">{meal.recipeName}</p>
-                                                <button onClick={() => handleRemoveMeal(meal.id)} className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-orange-600"><X className="w-4 h-4" /></button>
+                                            <div className="bg-orange-50/80 border border-orange-200 rounded-xl p-3 relative group shadow-sm hover:shadow transition-all h-full flex flex-col justify-between">
+                                                <p className="text-xs font-semibold text-orange-900 line-clamp-3 leading-snug">{meal.recipeName}</p>
+                                                <button 
+                                                    onClick={() => handleRemoveMeal(meal.id)} 
+                                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 bg-white/80 p-1 rounded-md shadow-sm transition-all"
+                                                    title="Remove meal"
+                                                >
+                                                    <X className="w-3.5 h-3.5" />
+                                                </button>
+                                                <span className="text-[10px] uppercase font-bold text-orange-400 tracking-wider mt-2">Planned</span>
                                             </div>
                                         ) : (
-                                            <button onClick={() => { setSelectedSlot({ date, mealType }); setShowAddModal(true); }} className="w-full h-full flex items-center justify-center text-gray-300 hover:text-orange-500"><Plus /></button>
+                                            <button 
+                                                onClick={() => { setSelectedSlot({ date, mealType }); setShowAddModal(true); }} 
+                                                className="w-full h-full min-h-[90px] border-2 border-dashed border-gray-100 hover:border-orange-300 rounded-xl flex items-center justify-center text-gray-300 hover:text-orange-500 hover:bg-orange-50/30 transition-all group"
+                                            >
+                                                <Plus className="w-5 h-5 transition-transform group-hover:scale-110" />
+                                            </button>
                                         )}
                                     </div>
                                 );
@@ -116,7 +166,7 @@ function MealPlanner() {
                 </div>
             </div>
 
-            {showAddModal && (
+            {showAddModal && selectedSlot && (
                 <AddMealModal 
                     date={selectedSlot.date} 
                     mealType={selectedSlot.mealType} 
@@ -138,36 +188,56 @@ const AddMealModal = ({ date, mealType, recipes, onClose, onSuccess }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!selectedRecipe) return toast.error('Select a recipe');
+        if (!selectedRecipe) return toast.error('Please select a recipe');
         setLoading(true);
         try {
             await api.post("/meal-plans/create", { recipeId: selectedRecipe, mealDate: date, mealType });
-            toast.success("Meal added");
+            toast.success("Meal added successfully");
             onSuccess();
         } catch (error) {
-            toast.error("Failed to add");
+            toast.error("Failed to add meal");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl max-w-md w-full p-6">
-                <h2 className="text-xl font-bold mb-4">Add Meal</h2>
-                <input className="w-full p-2 border rounded-lg mb-4" placeholder="Search..." onChange={(e) => setSearchQuery(e.target.value)} />
-                <form onSubmit={handleSubmit} className="space-y-2">
-                    <div className="max-h-60 overflow-y-auto">
-                        {filteredRecipes.map(r => (
-                            <label key={r.id} className={`block p-3 border rounded-lg cursor-pointer ${selectedRecipe == r.id ? 'bg-orange-50 border-orange-500' : ''}`}>
-                                <input type="radio" className="mr-2" name="recipe" value={r.id} onChange={(e) => setSelectedRecipe(e.target.value)} />
-                                {r.name}
-                            </label>
-                        ))}
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900 capitalize">Add {mealType}</h2>
+                        <p className="text-xs text-gray-500 mt-0.5">{format(new Date(date), 'EEEE, MMMM d, yyyy')}</p>
                     </div>
-                    <div className="flex gap-2 pt-4">
-                        <button type="button" onClick={onClose} className="flex-1 p-2 border rounded-lg">Cancel</button>
-                        <button type="submit" disabled={loading} className="flex-1 p-2 bg-orange-500 text-white rounded-lg">Add</button>
+                    <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                <input 
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-gray-50/50" 
+                    placeholder="Search recipes..." 
+                    onChange={(e) => setSearchQuery(e.target.value)} 
+                />
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
+                        {filteredRecipes.length === 0 ? (
+                            <p className="text-center text-gray-400 text-sm py-6">No recipes found.</p>
+                        ) : (
+                            filteredRecipes.map(r => (
+                                <label key={r.id} className={`flex items-center p-3 border rounded-xl cursor-pointer transition-all ${selectedRecipe == r.id ? 'bg-orange-50/80 border-orange-500 shadow-sm' : 'border-gray-200 hover:bg-gray-50'}`}>
+                                    <input type="radio" className="w-4 h-4 text-orange-500 border-gray-300 focus:ring-orange-500 mr-3" name="recipe" value={r.id} onChange={(e) => setSelectedRecipe(e.target.value)} />
+                                    <span className="text-sm font-medium text-gray-800">{r.name}</span>
+                                </label>
+                            ))
+                        )}
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                        <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl font-medium text-sm transition-colors">Cancel</button>
+                        <button type="submit" disabled={loading} className="flex-1 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium text-sm shadow-sm shadow-orange-500/30 transition-all disabled:opacity-50">
+                            {loading ? 'Adding...' : 'Add Meal'}
+                        </button>
                     </div>
                 </form>
             </div>

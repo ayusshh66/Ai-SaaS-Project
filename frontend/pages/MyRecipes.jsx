@@ -120,8 +120,6 @@ const MyRecipes = () => {
 };
 
 const RecipeCard = ({ recipe, onDelete }) => {
-    // FIX: Fallback to multiple property variations (camelCase vs snake_case) 
-    // and provide a default fallback time if none is found.
     const prep = recipe.prep_time ?? recipe.prepTime ?? 0;
     const cook = recipe.cook_time ?? recipe.cookTime ?? 0;
     const totalTime = prep + cook > 0 ? prep + cook : (recipe.totalTime || 30);

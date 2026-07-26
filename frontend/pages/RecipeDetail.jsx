@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Clock, Users, ChefHat, ArrowLeft, Trash2 } from 'lucide-react';
+import { Clock, Users, ChefHat, ArrowLeft, Trash2, Zap } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
 import api from '../services/api';
@@ -26,7 +26,7 @@ function RecipeDetail() {
                 setServings(recipeData.servings || 4);
             } catch (error) {
                 console.log("error in fetching info of recipe", error);
-                toast.error("Failed to load recipes");
+                toast.error("Failed to load recipe");
                 navigate("/recipes");
             } finally {
                 setLoading(false);
@@ -58,7 +58,20 @@ function RecipeDetail() {
     };
 
     const adjustQuantity = (originalQty, originalServings) => {
+        if (!originalQty) return '';
         return ((originalQty * servings) / originalServings).toFixed(2);
+    };
+
+    // Helper to clean up raw markdown bold tags like **text** from instructions
+    const renderInstructionText = (text) => {
+        if (!text) return '';
+        const parts = text.split(/(\*\*.*?\*\*)/g);
+        return parts.map((part, i) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={i} className="font-semibold text-gray-900">{part.slice(2, -2)}</strong>;
+            }
+            return part;
+        });
     };
 
     if (loading) {
@@ -76,16 +89,21 @@ function RecipeDetail() {
 
     const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
     const originalServings = recipe.servings || 4;
+    
+    // Handle potential differences in relation naming (ingredients vs recipeIngredients)
+    const ingredientsList = recipe.ingredients || recipe.recipeIngredients || [];
+    const nutritionInfo = recipe.nutrition || recipe.recipeNutrition || null;
+    const cuisineValue = recipe.cuisine || recipe.cuisine_type;
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 pb-12">
             <Navbar />
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <Link to="/recipes" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors">
                     <ArrowLeft className="w-5 h-5" /> Back to Recipes
                 </Link>
 
-                <div className="bg-white rounded-xl border border-gray-200 p-8 mb-6">
+                <div className="bg-white rounded-xl border border-gray-200 p-8 mb-6 shadow-sm">
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">{recipe.name}</h1>
@@ -97,47 +115,85 @@ function RecipeDetail() {
                     </div>
 
                     <div className="flex flex-wrap gap-2 mb-6">
-                        <span className="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">{recipe.cuisine_type}</span>
+                        {cuisineValue && (
+                            <span className="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-full text-sm font-medium capitalize">
+                                {cuisineValue}
+                            </span>
+                        )}
                         <span className={`px-3 py-1.5 rounded-full text-sm font-medium capitalize ${recipe.difficulty === 'easy' ? 'bg-green-100 text-green-700' : recipe.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                            {recipe.difficulty}
+                            {recipe.difficulty || 'Medium'}
                         </span>
                     </div>
 
                     <div className="flex flex-wrap gap-6 text-gray-600">
-                        <div className="flex items-center gap-2"><Clock className="w-5 h-5" /> <span className="font-medium">{totalTime} minutes</span></div>
+                        {totalTime > 0 && (
+                            <div className="flex items-center gap-2"><Clock className="w-5 h-5" /> <span className="font-medium">{totalTime} minutes</span></div>
+                        )}
+                        <div className="flex items-center gap-2"><Users className="w-5 h-5" /> <span className="font-medium">{servings} servings</span></div>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-1">
-                        <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
+                    <div className="lg:col-span-1 space-y-6">
+                        <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24 shadow-sm">
                             <h2 className="text-xl font-semibold text-gray-900 mb-4">Ingredients</h2>
                             <div className="flex items-center gap-3 mb-6">
-                                <button onClick={() => setServings(Math.max(1, servings - 1))} className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg">-</button>
+                                <button onClick={() => setServings(Math.max(1, servings - 1))} className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold flex items-center justify-center">-</button>
                                 <span className="text-lg font-semibold w-12 text-center">{servings}</span>
-                                <button onClick={() => setServings(servings + 1)} className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg">+</button>
+                                <button onClick={() => setServings(servings + 1)} className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold flex items-center justify-center">+</button>
                             </div>
                             <div className="space-y-3">
-                                {recipe.ingredients?.map((ing, index) => (
-                                    <label key={index} className="flex items-start gap-3 cursor-pointer">
-                                        <input type="checkbox" checked={checkedIngredients.has(index)} onChange={() => toggleIngredient(index)} className="mt-1 w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500" />
-                                        <span className={checkedIngredients.has(index) ? 'line-through text-gray-400' : 'text-gray-700'}>
-                                            <span className="font-medium">{adjustQuantity(ing.quantity, originalServings)}</span> {ing.unit} {ing.name}
-                                        </span>
-                                    </label>
-                                ))}
+                                {ingredientsList.length === 0 ? (
+                                    <p className="text-gray-400 text-sm">No ingredients listed.</p>
+                                ) : (
+                                    ingredientsList.map((ing, index) => (
+                                        <label key={index} className="flex items-start gap-3 cursor-pointer">
+                                            <input type="checkbox" checked={checkedIngredients.has(index)} onChange={() => toggleIngredient(index)} className="mt-1 w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500" />
+                                            <span className={checkedIngredients.has(index) ? 'line-through text-gray-400 text-sm' : 'text-gray-700 text-sm'}>
+                                                <span className="font-medium">{adjustQuantity(ing.quantity, originalServings)}</span> {ing.unit} {ing.name || ing.ingredientName}
+                                            </span>
+                                        </label>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>
 
                     <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
+                        {/* Nutrition Card */}
+                        {nutritionInfo && (
+                            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                                <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                    <Zap className="w-5 h-5 text-orange-500" /> Nutrition Facts (Per Serving)
+                                </h2>
+                                <div className="grid grid-cols-4 gap-4 text-center">
+                                    <div className="bg-orange-50 p-3 rounded-lg">
+                                        <p className="text-xs text-gray-500 font-medium">Calories</p>
+                                        <p className="text-lg font-bold text-orange-600">{Math.round(nutritionInfo.calories / (recipe.servings || 4))}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                        <p className="text-xs text-gray-500 font-medium">Protein</p>
+                                        <p className="text-lg font-bold text-gray-800">{Math.round(nutritionInfo.protein / (recipe.servings || 4))}g</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                        <p className="text-xs text-gray-500 font-medium">Carbs</p>
+                                        <p className="text-lg font-bold text-gray-800">{Math.round(nutritionInfo.carbs / (recipe.servings || 4))}g</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                        <p className="text-xs text-gray-500 font-medium">Fats</p>
+                                        <p className="text-lg font-bold text-gray-800">{Math.round(nutritionInfo.fats / (recipe.servings || 4))}g</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                             <h2 className="text-xl font-semibold text-gray-900 mb-4">Instructions</h2>
                             <ol className="space-y-4">
                                 {recipe.instructions?.map((step, index) => (
                                     <li key={index} className="flex gap-4">
                                         <span className="shrink-0 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">{index + 1}</span>
-                                        <p className="text-gray-700 pt-1">{step}</p>
+                                        <p className="text-gray-700 pt-1 leading-relaxed">{renderInstructionText(step)}</p>
                                     </li>
                                 ))}
                             </ol>

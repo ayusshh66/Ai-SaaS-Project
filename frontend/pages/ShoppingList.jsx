@@ -113,10 +113,28 @@ const ShoppingList = () => {
                                             >
                                                 {item.is_checked && <Check className="w-4 h-4 text-white" />}
                                             </button>
+                                            
                                             <div className="flex-1">
                                                 <p className={`font-medium ${item.is_checked ? 'line-through text-gray-400' : 'text-gray-900'}`}>{item.ingredient_name}</p>
                                                 <p className="text-sm text-gray-500">{item.quantity} {item.unit}</p>
+                                                
+                                                {/* Quick Commerce Integration Buttons */}
+                                                <div className="flex gap-2 mt-2">
+                                                    <button 
+                                                        onClick={() => window.open(`https://blinkit.com/s/?q=${encodeURIComponent(item.ingredient_name)}`, '_blank')}
+                                                        className="text-xs bg-yellow-100 text-yellow-800 hover:bg-yellow-200 px-2.5 py-1 rounded-md font-medium transition-colors"
+                                                    >
+                                                        Order on Blinkit
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => window.open(`https://www.zeptonow.com/search?query=${encodeURIComponent(item.ingredient_name)}`, '_blank')}
+                                                        className="text-xs bg-purple-100 text-purple-800 hover:bg-purple-200 px-2.5 py-1 rounded-md font-medium transition-colors"
+                                                    >
+                                                        Order on Zepto
+                                                    </button>
+                                                </div>
                                             </div>
+
                                             <button onClick={() => handleDeleteItem(item.id)} className="text-gray-400 hover:text-orange-600 p-2">
                                                 <Trash2 className="w-5 h-5" />
                                             </button>
@@ -154,7 +172,7 @@ const AddItemModal = ({ onClose, onSuccess }) => {
         try {
             const payload = { ...formData, quantity: formData.quantity.toString() };
             console.log("Sending payload:", payload);
-            await api.post('/shopping-list/create',payload);
+            await api.post('/shopping-list/create', payload);
             toast.success('Item added to shopping list');
             onSuccess();
         } catch (error) {
