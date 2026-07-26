@@ -1,16 +1,11 @@
-  services:
-    postgresAiSaas:
-      image: postgres
-      container_name: postgresAiSaas
-      restart: always
-      ports:
-        - "5432:5432"
-      environment:
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: ggwp
-        POSTGRES_DB: postgresAiSaas
-      volumes:
-        - postgresAiSaas_data:/var/lib/postgresql
-
-  volumes:
-    postgresAiSaas_data:
+services:
+  backend:
+    build: .
+    container_name: aimom-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=postgresql://neondb_owner:npg_RzVfnAg9h4TY@ep-snowy-rain-ayoomp30-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require

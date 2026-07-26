@@ -5,6 +5,8 @@ import recipeRouter from './routes/recipe.js';
 import mealPlanRouter from './routes/mealPlans.js';
 import shoppingListRouter from './routes/shoppingListItems.js';
 import cors from 'cors'
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT ?? 8000;
