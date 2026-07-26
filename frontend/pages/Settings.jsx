@@ -54,9 +54,18 @@ function Settings() {
         e.preventDefault();
         setSaving(true);
         try {
-            await api.patch('/users/update', { userName: profile.name, preferences: preferences });
+            await api.patch('/users/update', { userName: profile.name });
             toast.success('Profile updated successfully');
         } catch (error) { toast.error('Failed to update profile'); }
+        finally { setSaving(false); }
+    };
+
+    const handlePreferencesUpdate = async () => {
+        setSaving(true);
+        try {
+            await api.patch('/users/update', { preferences: preferences });
+            toast.success('Preferences updated successfully');
+        } catch (error) { toast.error('Failed to update preferences'); }
         finally { setSaving(false); }
     };
 
@@ -75,6 +84,18 @@ function Settings() {
             setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         } catch (error) { toast.error('Failed to change password'); }
         finally { setSaving(false); }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) return;
+        try {
+            await api.delete('/users/delete'); 
+            toast.success('Account deleted successfully');
+            logout();
+            navigate("/login")
+        } catch (error) {
+            toast.error('Failed to delete account');
+        }
     };
 
     const toggleDietary = (opt) => setPreferences(prev => ({
@@ -102,7 +123,7 @@ function Settings() {
                     <form onSubmit={handleProfileUpdate} className="space-y-4">
                         <input className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500" value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} placeholder="Name" />
                         <input className="w-full p-3 border rounded-lg bg-gray-100" value={profile.email} disabled />
-                        <button type="submit" className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 flex items-center gap-2"><Save size={18} /> Save Profile</button>
+                        <button type="submit" disabled={saving} className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 flex items-center gap-2"><Save size={18} /> Save Profile</button>
                     </form>
                 </div>
 
@@ -113,7 +134,7 @@ function Settings() {
                         <input type="password" placeholder="Current Password" className="w-full p-3 border rounded-lg" onChange={e => setPasswordData({...passwordData, currentPassword: e.target.value})} />
                         <input type="password" placeholder="New Password" className="w-full p-3 border rounded-lg" onChange={e => setPasswordData({...passwordData, newPassword: e.target.value})} />
                         <input type="password" placeholder="Confirm New Password" className="w-full p-3 border rounded-lg" onChange={e => setPasswordData({...passwordData, confirmPassword: e.target.value})} />
-                        <button type="submit" className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600">Change Password</button>
+                        <button type="submit" disabled={saving} className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600">Change Password</button>
                     </form>
                 </div>
 
@@ -127,7 +148,7 @@ function Settings() {
                             <label className="block text-sm font-medium mb-3">Dietary Restrictions</label>
                             <div className="flex flex-wrap gap-2">
                                 {DIETARY_OPTIONS.map(opt => (
-                                    <button key={opt} onClick={() => toggleDietary(opt)} className={`px-4 py-2 rounded-lg ${preferences.dietary_restrictions.includes(opt) ? 'bg-orange-500 text-white' : 'bg-gray-100'}`}> {opt} </button>
+                                    <button type="button" key={opt} onClick={() => toggleDietary(opt)} className={`px-4 py-2 rounded-lg ${preferences.dietary_restrictions.includes(opt) ? 'bg-orange-500 text-white' : 'bg-gray-100'}`}> {opt} </button>
                                 ))}
                             </div>
                         </div>
@@ -137,7 +158,7 @@ function Settings() {
                             <label className="block text-sm font-medium mb-3">Preferred Cuisines</label>
                             <div className="flex flex-wrap gap-2">
                                 {CUISINES.map(cui => (
-                                    <button key={cui} onClick={() => toggleCuisine(cui)} className={`px-4 py-2 rounded-lg ${preferences.preferred_cuisines.includes(cui) ? 'bg-orange-500 text-white' : 'bg-gray-100'}`}> {cui} </button>
+                                    <button type="button" key={cui} onClick={() => toggleCuisine(cui)} className={`px-4 py-2 rounded-lg ${preferences.preferred_cuisines.includes(cui) ? 'bg-orange-500 text-white' : 'bg-gray-100'}`}> {cui} </button>
                                 ))}
                             </div>
                         </div>
@@ -150,19 +171,23 @@ function Settings() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-2">Daily Calorie Target</label>
-                                    <input 
-                                         type="number" 
-                                         value={preferences.dailyCalories || ''} // Use empty string if 0, or just the number
-                                         onChange={e => setPreferences({...preferences, dailyCalories: parseInt(e.target.value) || 0})} 
-                                         className="w-full p-3 border rounded-lg" 
-                                    />                            
+                                <input 
+                                   type="number" 
+                                   value={preferences.dailyCalories || ''} 
+                                   onChange={e => setPreferences({...preferences, dailyCalories: parseInt(e.target.value) || 0})} 
+                                   className="w-full p-3 border rounded-lg" 
+                                />            
                             </div>
                         </div>
+
+                        <button type="button" onClick={handlePreferencesUpdate} disabled={saving} className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 flex items-center gap-2">
+                            <Save size={18} /> Save Preferences
+                        </button>
                     </div>
                 </div>
 
                 {/* Danger Zone */}
-                <button onClick={() => {if(confirm("Delete account?")) logout();}} className="text-red-500 flex items-center gap-2 hover:text-red-700 font-medium">
+                <button onClick={handleDeleteAccount} className="text-red-500 flex items-center gap-2 hover:text-red-700 font-medium">
                     <Trash2 size={18} /> Delete Account
                 </button>
             </div>

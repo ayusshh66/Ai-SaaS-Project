@@ -9,60 +9,57 @@ const Dashboard = () => {
         totalRecipes: 0,
         pantryItems: 0,
         mealsThisWeek: 0,
-        recipeTime : 0,
+        recipeTime: 0,
     });
     const [recentRecipes, setRecentRecipes] = useState([]);
     const [upcomingMeals, setUpcomingMeals] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    //fetching dashboard data from api 
+    // Fetching dashboard data from api 
     useEffect(() => {
-        fetchDashBoardData()
-    },[])
+        fetchDashBoardData();
+    }, []);
 
-    const fetchDashBoardData = async() =>{
-
+    const fetchDashBoardData = async () => {
         try {
-
             const [recentRes, upcomingRes, pantryRes, recipesStatsRes, mealPlanStatsRes] = await Promise.all([
                 api.get('/recipes/recent?limit=5'),
                 api.get('/meal-plans/upcoming?limit=5'),
                 api.get('/pantry/stats'),
                 api.get('/recipes/stats'),
                 api.get('/meal-plans/stats'),
-            ])
+            ]);
 
             console.log("Recipes Stats Response:", recipesStatsRes.data);
             console.log("Recent Recipes Response:", recentRes.data);    
 
             setStats({
-                totalRecipes : recipesStatsRes.data.data.total_recipes,
-                pantryItems : pantryRes.data.results,
-                mealsThisWeek : mealPlanStatsRes.data.data.this_week_count,
-                recipeTime : recipesStatsRes.data.data.avg_prep_time,
+                totalRecipes: recipesStatsRes.data.data.total_recipes,
+                pantryItems: pantryRes.data.results,
+                mealsThisWeek: mealPlanStatsRes.data.data.this_week_count,
+                recipeTime: recipesStatsRes.data.data.avg_prep_time,
             });
             
-            setRecentRecipes(recentRes.data.data || [])
-            setUpcomingMeals(upcomingRes.data.data || [])
+            setRecentRecipes(recentRes.data.data || []);
+            setUpcomingMeals(upcomingRes.data.data || []);
 
         } catch (error) {
-            console.log("error fetching the dasboard data", error)
-        }finally{
-            setLoading(false)
+            console.log("error fetching the dashboard data", error);
+        } finally {
+            setLoading(false);
         }
-
-    }
+    };
 
     if (loading) {
-  return (
-    <div className="min-h-screen bg-gray-50 selection:bg-orange-300">
-      <Navbar />
-      <div className="flex items-center justify-center h-96">
-        <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    </div>
-  );
-}
+        return (
+            <div className="min-h-screen bg-gray-50 selection:bg-orange-300">
+                <Navbar />
+                <div className="flex items-center justify-center h-96">
+                    <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 selection:bg-orange-300">
@@ -143,24 +140,31 @@ const Dashboard = () => {
 
                         {recentRecipes.length > 0 ? (
                             <div className="space-y-3">
-                                {recentRecipes.map((recipe) => (
-                                    <Link
-                                        key={recipe.id}
-                                        to={`/recipes/${recipe.id}`}
-                                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                                    >
-                                        <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                                            <ChefHat className="w-6 h-6 text-orange-600" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-medium text-gray-900 truncate">{recipe.name}</h3>
-                                            <p className="text-sm text-gray-500 flex items-center gap-1">
-                                                <Clock className="w-3 h-3" />
-                                                {stats.recipeTime} mins
-                                            </p>
-                                        </div>
-                                    </Link>
-                                ))}
+                                {recentRecipes.map((recipe) => {
+                                    // Combine prepTime and cookTime, or fallback appropriately
+                                    const prep = recipe.prep_time ?? recipe.prepTime ?? 0;
+                                    const cook = recipe.cook_time ?? recipe.cookTime ?? recipe.cooking_time ?? recipe.cookingTime ?? 0;
+                                    const totalTime = (prep + cook) > 0 ? (prep + cook) : (recipe.time || recipe.duration || stats.recipeTime || 30);
+
+                                    return (
+                                        <Link
+                                            key={recipe.id}
+                                            to={`/recipes/${recipe.id}`}
+                                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                                        >
+                                            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                                <ChefHat className="w-6 h-6 text-orange-600" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-medium text-gray-900 truncate">{recipe.name}</h3>
+                                                <p className="text-sm text-gray-500 flex items-center gap-1">
+                                                    <Clock className="w-3 h-3" />
+                                                    {totalTime} mins
+                                                </p>
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
                             </div>
                         ) : (
                             <p className="text-gray-500 text-center py-8">No recipes yet. Generate your first one!</p>
@@ -187,8 +191,12 @@ const Dashboard = () => {
                                             <Calendar className="w-6 h-6 text-purple-600" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="font-medium text-gray-900 truncate">{meal.recipe_name}</h3>
-                                            <p className="text-sm text-gray-500 capitalize">{meal.meal_type}</p>
+                                            <h3 className="font-medium text-gray-900 truncate">
+                                                {meal.recipe_name || meal.recipeName || meal.title || "Unnamed Meal"}
+                                            </h3>
+                                            <p className="text-sm text-gray-500 capitalize">
+                                                {meal.meal_type || meal.mealType || "Scheduled Meal"}
+                                            </p>
                                         </div>
                                     </div>
                                 ))}
