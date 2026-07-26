@@ -120,20 +120,29 @@ const MyRecipes = () => {
 };
 
 const RecipeCard = ({ recipe, onDelete }) => {
-    const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
+    // FIX: Fallback to multiple property variations (camelCase vs snake_case) 
+    // and provide a default fallback time if none is found.
+    const prep = recipe.prep_time ?? recipe.prepTime ?? 0;
+    const cook = recipe.cook_time ?? recipe.cookTime ?? 0;
+    const totalTime = prep + cook > 0 ? prep + cook : (recipe.totalTime || 30);
 
     return (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all group">
-            <div className="h-48 bg-linear-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+            <div className="h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
                 <ChefHat className="w-16 h-16 text-orange-600" />
             </div>
             <div className="p-5">
                 <h3 className="font-semibold text-lg text-gray-900 mb-3">{recipe.name}</h3>
                 <div className="flex gap-2 mb-4">
-                    <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-medium">{recipe.cuisine_type}</span>
+                    <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-medium">
+                        {recipe.cuisine_type || recipe.cuisine || 'General'}
+                    </span>
                 </div>
                 <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-                    <div className="flex items-center gap-1"><Clock className="w-4 h-4" /> <span>{totalTime} mins</span></div>
+                    <div className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" /> 
+                        <span>{totalTime} mins</span>
+                    </div>
                 </div>
                 <div className="flex gap-2 pt-4 border-t border-gray-100">
                     <Link to={`/recipes/${recipe.id}`} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-center py-2 rounded-lg font-medium text-sm">View</Link>
